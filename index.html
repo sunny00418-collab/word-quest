@@ -238,7 +238,7 @@ const ROUND_SIZE = 20;
 const TYPE_WEIGHTS = { EN_CN:25, CN_EN:20, DEF:25, FILL:30 };  // 出題比例
 const INFL_RATE  = 0.10;   // 變化形題比例（穿插、不相鄰）
 const FIX_NEEDED = 2;      // 錯題要答對幾次才算「打敗」
-const OK_WAIT    = 3000;   // 答對後至少停幾毫秒才進下一題（NEXT 鍵也要等）
+const OK_WAIT    = 3000;   // 答對後幾毫秒自動進下一題（NEXT 鍵隨時可按）
 
 /* ===================== DATA =====================
    擴充新單元：在 vocabData 末尾加字、sentenceZH 加翻譯、
@@ -1385,7 +1385,7 @@ function answer(i){
       <button class="spk" data-w="${esc(v.word)}" onclick="speak(this.dataset.w)">🔊</button></div>
     ${detail}
     ${fixedNow ? `<div class="fb-fix">💪 MISTAKE BEATEN! +15 bonus XP</div>` : ""}
-    <button id="fbNext" class="btn ${ok?"b-cont":"b-start"}" onclick="nextQ()" ${ok?"disabled":""}>${c.idx+1 >= c.questions.length ? "SEE RESULTS 🏁" : "NEXT ▶"}</button>
+    <button id="fbNext" class="btn ${ok?"b-cont":"b-start"}" onclick="nextQ()">${c.idx+1 >= c.questions.length ? "SEE RESULTS 🏁" : "NEXT ▶"}</button>
   </div>`;
   if (!ok) setTimeout(() => $("#fb").scrollIntoView({behavior:"smooth", block:"nearest"}), 50);
 
@@ -1393,7 +1393,6 @@ function answer(i){
     SFX.ok();
     if (fixedNow){ setTimeout(SFX.fix, 200); banner("💪 BRAVE!", "Mistake beaten!"); burst(90); }
     if (c.streak % 5 === 0){ setTimeout(SFX.streak, 150); banner(STREAK_MSG[c.streak] || "🌟 LEGENDARY!", c.streak + " in a row!"); burst(160); }
-    setTimeout(() => { const b = $("#fbNext"); if (b) b.disabled = false; }, OK_WAIT);
     clearTimeout(window._auto); window._auto = setTimeout(() => { if (S.current === c && c.locked) nextQ(); }, fixedNow || c.streak % 5 === 0 ? OK_WAIT + 800 : OK_WAIT);
   } else SFX.bad();
   $(".qscore").textContent = "✔ " + c.score;
