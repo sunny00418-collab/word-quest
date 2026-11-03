@@ -1543,14 +1543,17 @@ function buildReport(r){
   return txt;
 }
 // 報告先放進 outbox（存在手機裡），送成功才移除；沒送出的下次打開或下一回合會再補送
+// 每則報告有編號，轉發程式會擋掉重複的編號，所以補送不會讓 Telegram 收到兩次
 function sendTelegram(text, silent){
-  S.outbox = (S.outbox || []).concat([text]).slice(-20); save();
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  S.outbox = (S.outbox || []).concat([{id, text}]).slice(-20); save();
   flushOutbox(silent);
 }
 function flushOutbox(silent){
   if (flushOutbox.busy || !(S.outbox || []).length) return;
   flushOutbox.busy = true;
-  relayOnce(S.outbox[0], j => {
+  const item = typeof S.outbox[0] === "string" ? {id:"", text:S.outbox[0]} : S.outbox[0];
+  relayOnce(item.text, item.id, j => {
     flushOutbox.busy = false;
     if (j && j.ok){
       S.outbox.shift(); save();
@@ -1563,15 +1566,15 @@ function flushOutbox(silent){
   });
 }
 // 先用 Apps Script 內建通道；失敗或不在 Apps Script 裡時改用網址 POST
-function relayOnce(text, cb){
+function relayOnce(text, id, cb){
   const viaFetch = () => {
     if (!RELAY_URL) return cb({ok:false, description:"no relay url"});
-    fetch(RELAY_URL, {method:"POST", body:new URLSearchParams({text})})
+    fetch(RELAY_URL, {method:"POST", body:new URLSearchParams({text, id})})
       .then(r => r.json().catch(() => ({})).then(j => cb({ok:!!(r.ok && j.ok), description:j.description || r.status})))
       .catch(e => cb({ok:false, description:"network: " + (e && e.message || e)}));
   };
   if (window.google && google.script && google.script.run){
-    google.script.run.withSuccessHandler(j => j && j.ok ? cb(j) : viaFetch()).withFailureHandler(viaFetch).relay(text);
+    google.script.run.withSuccessHandler(j => j && j.ok ? cb(j) : viaFetch()).withFailureHandler(viaFetch).relay(text, id);
   } else viaFetch();
 }
 
