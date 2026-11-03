@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Word Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0b1e; --bg2:#15123a; --panel:#1c1846; --panel2:#251f5c; --line:#3a3380;
+  --cyan:#2ef2ff; --pink:#ff3fa4; --yellow:#ffd23f; --green:#3cff8f; --red:#ff5a6e;
+  --purple:#9b5cff; --orange:#ff8a3d; --text:#f2f0ff; --muted:#a9a3d9;
+  --pixel:"Press Start 2P", ui-monospace, monospace;
+  --body:"Nunito","PingFang TC","Noto Sans TC","Heiti TC",system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh}
+body{
+  background:
+    radial-gradient(circle at 20% -10%, #3b1d7a 0%, transparent 45%),
+    radial-gradient(circle at 110% 30%, #0f3d6e 0%, transparent 40%),
+    linear-gradient(transparent 95%, rgba(46,242,255,.06) 95%) 0 0/100% 28px,
+    var(--bg);
+  background-attachment:fixed;
+}
+button{font-family:inherit;touch-action:manipulation;cursor:pointer;border:none;color:inherit}
+.hidden{display:none!important}
+#app{max-width:760px;margin:0 auto;padding:16px 16px 60px;padding-top:max(16px,env(safe-area-inset-top))}
+.pixel{font-family:var(--pixel);letter-spacing:.5px}
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:2px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.card h3{font-family:var(--pixel);font-size:11px;color:var(--cyan);margin:0 0 12px;letter-spacing:1px}
+
+/* ---------- header ---------- */
+.logo{text-align:center;margin:8px 0 18px}
+.logo .t1{font-family:var(--pixel);font-size:28px;line-height:1.3;color:var(--yellow);
+  text-shadow:3px 3px 0 var(--pink),6px 6px 0 rgba(0,0,0,.5)}
+.logo .t2{font-size:15px;color:var(--muted);margin-top:8px;font-weight:800}
+
+/* ---------- player card ---------- */
+.player{display:flex;gap:14px;align-items:center}
+.avatar{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--purple),var(--pink));
+  display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0;border:2px solid #fff3}
+.pinfo{flex:1;min-width:0}
+.plv{font-family:var(--pixel);font-size:12px;color:var(--yellow)}
+.ptitle{font-weight:900;font-size:20px;margin:4px 0 6px}
+.xpbar{height:14px;background:#0008;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.xpbar>div{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:8px;transition:width .6s}
+.xptxt{font-size:12px;color:var(--muted);margin-top:4px;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.stat{background:#0005;border-radius:12px;padding:10px 4px;text-align:center}
+.stat b{display:block;font-size:20px;font-weight:900}
+.stat span{font-size:11px;color:var(--muted);font-weight:800}
+
+/* ---------- unit chips ---------- */
+.tsec{margin-bottom:12px}
+.thead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.thead b{font-weight:900;font-size:16px}
+.btn-link{background:none;color:var(--cyan);font-weight:800;font-size:14px;padding:4px 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:#0006;border:2px solid var(--line);border-radius:12px;padding:8px 12px;font-weight:800;font-size:15px;color:var(--muted);text-align:left;min-width:92px}
+.chip small{display:block;font-size:11px;margin-top:2px;opacity:.85}
+.chip.on{border-color:var(--cyan);color:var(--text);background:rgba(46,242,255,.12)}
+.chip.on.f{border-color:var(--pink);background:rgba(255,63,164,.13)}
+.selinfo{font-size:13px;color:var(--muted);font-weight:800;margin-top:6px}
+
+/* ---------- buttons ---------- */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:14px;
+  font-weight:900;font-size:18px;margin-bottom:10px;box-shadow:0 5px 0 rgba(0,0,0,.4);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.btn small{font-weight:800;font-size:13px;opacity:.85}
+.b-start{background:linear-gradient(180deg,#ffe066,var(--yellow));color:#2a1a00}
+.b-cont{background:linear-gradient(180deg,#6dfbb0,var(--green));color:#00301a}
+.b-gym{background:linear-gradient(180deg,#ff7cc0,var(--pink));color:#fff}
+.b-exam{background:linear-gradient(180deg,#b78bff,var(--purple));color:#fff}
+.b-ghost{background:var(--panel2);color:var(--text);border:2px solid var(--line)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2 .btn{margin-bottom:0}
+.row-sm{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.btn-sm{background:var(--panel2);border:2px solid var(--line);border-radius:10px;padding:8px 12px;font-weight:800;font-size:14px}
+.badge-n{background:#fff;color:var(--pink);border-radius:10px;padding:1px 8px;font-size:14px}
+
+/* ---------- quiz ---------- */
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.qlabel{flex:1;font-family:var(--pixel);font-size:10px;color:var(--cyan);line-height:1.5}
+.qscore{font-weight:900;font-size:16px;color:var(--green)}
+.pbar{height:10px;background:#0007;border-radius:6px;overflow:hidden;margin-bottom:10px}
+.pbar>div{height:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));transition:width .4s}
+.qcount{font-size:14px;color:var(--muted);font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:900;padding:3px 10px;border-radius:20px;color:#000}
+.t-EN_CN{background:var(--cyan)} .t-CN_EN{background:var(--yellow)} .t-DEF{background:#b78bff}
+.t-FILL{background:var(--green)} .t-INFL{background:var(--orange)}
+.qcard{text-align:center;padding:22px 16px;min-height:150px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.ask{font-size:15px;color:var(--muted);font-weight:800}
+.big{font-size:38px;font-weight:900;line-height:1.2;word-break:break-word}
+.big.zh{font-size:32px}
+.pos{font-size:15px;color:var(--cyan);font-weight:800;font-style:italic}
+.def{font-size:22px;font-weight:800;line-height:1.45}
+.sent{font-size:21px;font-weight:700;line-height:1.6;text-align:left}
+.blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--yellow);color:var(--yellow);text-align:center}
+.zhhint{font-size:16px;color:var(--muted);font-weight:700;text-align:left;border-top:1px dashed var(--line);padding-top:10px}
+.spk{background:var(--panel2);border:2px solid var(--line);border-radius:50%;width:44px;height:44px;font-size:20px;vertical-align:middle;margin-left:6px}
+.hint-btn{background:none;border:2px dashed var(--line);color:var(--muted);border-radius:10px;padding:8px 12px;font-weight:800;font-size:14px;align-self:center}
+.hintbox{font-size:17px;color:var(--yellow);font-weight:800}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{background:var(--panel2);border:3px solid var(--line);border-radius:14px;padding:16px 10px;min-height:70px;font-size:20px;font-weight:800;
+  box-shadow:0 5px 0 rgba(0,0,0,.4);transition:transform .08s}
+.opt:active{transform:translateY(3px)}
+.opt.right{background:#0f5a37;border-color:var(--green);color:#fff}
+.opt.wrong{background:#5a1020;border-color:var(--red);color:#fff;animation:shake .35s}
+.opt.dim{opacity:.45}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.fb{margin-top:14px;border-radius:16px;padding:16px;border:2px solid;animation:pop .25s}
+.fb.ok{background:rgba(60,255,143,.1);border-color:var(--green)}
+.fb.bad{background:rgba(255,90,110,.1);border-color:var(--red)}
+@keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.fb-t{font-weight:900;font-size:19px;margin-bottom:8px}
+.fb-w{font-size:20px;font-weight:900;margin-bottom:6px}
+.fb-w i{color:var(--cyan);font-size:15px;margin:0 6px}
+.fb-s{font-size:17px;line-height:1.55;font-weight:700}
+.fb-s b{color:var(--yellow)}
+.fb-zh{font-size:15px;color:var(--muted);font-weight:700;margin-top:4px}
+.fb-fix{margin-top:10px;font-weight:900;color:var(--yellow);font-size:17px}
+.fb .btn{margin:14px 0 0}
+
+/* ---------- result ---------- */
+.res-stars{font-size:54px;text-align:center;letter-spacing:6px;margin:6px 0}
+.res-score{font-family:var(--pixel);font-size:30px;text-align:center;color:var(--yellow);margin:8px 0}
+.res-msg{text-align:center;font-weight:900;font-size:19px;margin-bottom:12px}
+.res-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line);font-weight:800}
+.res-row:last-child{border:none}
+.miss-item{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);font-weight:800}
+.tf-h{font-weight:900;color:var(--yellow);margin:12px 0 2px;font-size:14px}
+.tf-h:first-of-type{margin-top:0}
+.tf{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);cursor:pointer}
+.tf b{display:block;font-weight:900;font-size:16px}
+.tf .tf-f{color:var(--green)}
+.tf small{display:block;color:var(--muted);font-weight:700;font-size:13px}
+.tf>span{color:var(--orange);font-weight:800;font-size:13px;text-align:right}
+.miss-item span{color:var(--muted);font-weight:700;text-align:right}
+
+/* ---------- trophies / book / exam ---------- */
+.trophies{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tro{background:#0005;border:2px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.tro .ic{font-size:36px}
+.tro b{display:block;margin:6px 0 2px;font-weight:900}
+.tro span{font-size:12px;color:var(--muted);font-weight:700}
+.tro.locked{opacity:.35;filter:grayscale(1)}
+.tro.got{border-color:var(--yellow);box-shadow:0 0 14px rgba(255,210,63,.3)}
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.wc{background:#0005;border:2px solid var(--line);border-radius:12px;padding:10px;text-align:left}
+.wc b{display:block;font-size:16px;font-weight:900}
+.wc span{font-size:13px;color:var(--muted);font-weight:700}
+.wc .st{font-size:14px;margin-top:4px;color:var(--yellow);letter-spacing:2px}
+.wc.m3{border-color:var(--yellow)}
+.ex-item{padding:10px 0;border-bottom:1px dashed var(--line)}
+.ex-item:last-child{border:none}
+.ex-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ex-top b{font-size:17px;font-weight:900}
+.ex-top .cnt{color:var(--red);font-weight:900}
+.ex-sub{font-size:13px;color:var(--muted);font-weight:700;margin:3px 0 5px}
+.ex-tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.ex-tags .tag{font-size:11px;padding:2px 8px}
+.status{font-size:12px;font-weight:900;margin-left:auto}
+.status.fixed{color:var(--green)} .status.act{color:var(--pink)}
+.back{margin-bottom:12px}
+.empty{text-align:center;color:var(--muted);font-weight:800;padding:20px}
+.note{font-size:14px;color:var(--muted);font-weight:700;line-height:1.5;margin:0 0 12px}
+
+/* ---------- ready check ---------- */
+.btn:disabled{opacity:.45;box-shadow:none;cursor:not-allowed;transform:none}
+.ready-msg{text-align:center;line-height:1.6}
+.ready-msg p{margin:0 0 12px}
+.ready-msg b{display:block;font-size:19px;font-weight:900}
+.ready-msg span{display:block;font-size:16px;color:var(--yellow);font-weight:800}
+.name-in{width:100%;box-sizing:border-box;font:inherit;font-size:22px;font-weight:900;text-align:center;padding:12px;border-radius:12px;border:3px solid var(--muted);background:transparent;color:inherit}
+.rk{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:#0005;border:2px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.rk .box{width:30px;height:30px;border-radius:8px;border:3px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#00301a}
+.rk.on{border-color:var(--green);background:rgba(60,255,143,.1)}
+.rk.on .box{background:var(--green);border-color:var(--green)}
+.rk.on .box::after{content:"✓"}
+.rk b{display:block;font-weight:900;font-size:16px}
+.rk span{display:block;font-size:14px;color:var(--muted);font-weight:700}
+
+/* ---------- fx ---------- */
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+#streak{position:fixed;top:max(12px,env(safe-area-inset-top));right:14px;z-index:40;background:linear-gradient(135deg,var(--orange),var(--red));
+  border-radius:20px;padding:8px 14px;font-weight:900;font-size:18px;box-shadow:0 0 18px rgba(255,138,61,.7);animation:flame .6s infinite alternate}
+@keyframes flame{from{transform:scale(1)}to{transform:scale(1.08)}}
+#banner{position:fixed;left:0;right:0;top:38%;text-align:center;z-index:60;pointer-events:none;opacity:0}
+#banner.show{animation:bn 1.8s ease-out forwards}
+#banner .bn-main{font-family:var(--pixel);font-size:30px;color:var(--yellow);text-shadow:3px 3px 0 var(--pink),0 0 30px rgba(255,210,63,.8);line-height:1.4;padding:0 10px}
+#banner .bn-sub{font-weight:900;font-size:20px;margin-top:10px;text-shadow:0 2px 8px #000}
+@keyframes bn{0%{opacity:0;transform:scale(.4)}15%{opacity:1;transform:scale(1.15)}25%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-30px)}}
+#toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translateX(-50%) translateY(120px);background:#fff;color:#1b1340;
+  font-weight:900;padding:12px 20px;border-radius:14px;z-index:70;transition:transform .3s;max-width:90%;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+@media (max-width:520px){
+  .logo .t1{font-size:20px}
+  .big{font-size:30px} .big.zh{font-size:26px}
+  .def{font-size:19px} .sent{font-size:18px}
+  .opt{font-size:17px;min-height:62px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  #banner .bn-main{font-size:20px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <section id="ready" class="hidden"></section>
+  <section id="home"></section>
+  <section id="quiz" class="hidden"></section>
+  <section id="result" class="hidden"></section>
+  <section id="trophies" class="hidden"></section>
+  <section id="book" class="hidden"></section>
+  <section id="exam" class="hidden"></section>
+</div>
+<div id="streak" class="hidden"></div>
+<canvas id="fx"></canvas>
+<div id="banner"></div>
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   Word Quest — Grade 4 vocabulary game
+   Units: Teacher F Set 1–6, Teacher C Week 1–8
+   ========================================================= */
+
+// ===== TELEGRAM (留空 = 不發送) =====
+// Token 存在 Google Apps Script 轉發程式裡（word_quest_telegram_relay.gs），這裡只放它的網址
+const RELAY_URL = "https://script.google.com/macros/s/AKfycbwDyLcBw-2DHSyrQ7Uc3eZOCeUGVb6F9RBvgXbUxqCkjGrREH2JQtCaa0TyB0mB40352w/exec";   // Apps Script「Word Quest Telegram Relay」網頁應用程式網址
+
+// ===== SETTINGS =====
+const STORE_KEY  = "jerry_wordquest_v1";
+const ROUND_SIZE = 20;
+const TYPE_WEIGHTS = { EN_CN:25, CN_EN:20, DEF:25, FILL:30 };  // 出題比例
+const INFL_RATE  = 0.10;   // 變化形題比例（穿插、不相鄰）
+const FIX_NEEDED = 2;      // 錯題要答對幾次才算「打敗」
+const OK_WAIT    = 3000;   // 答對後至少停幾毫秒才進下一題（NEXT 鍵也要等）
+
+/* ===================== DATA =====================
+   擴充新單元：在 vocabData 末尾加字、sentenceZH 加翻譯、
+   inflectionData 加變化形。首頁單元選單會自動出現，不用改其他地方。
+   answer：只在例句裡的形態和 word 不同時才需要（例：implanted）
+   ================================================= */
+const vocabData = [
+  // ── F老師 Set 1 ──
+  { word:"pollution", pos:"n.*", chinese:"污染",
+    def:"damage to the air, water, or land caused by harmful things", defZH:"有害物質對空氣、水或土地造成的破壞",
+    sentence:"Air ______ makes it hard for some people to breathe.",
+    teacher:"F", unit:"Set 1" },
+  { word:"species", pos:"n.", chinese:"物種",
+    def:"a group of animals or plants of the same kind", defZH:"同一種類的一群動物或植物",
+    sentence:"The tiger is an endangered ______.",
+    teacher:"F", unit:"Set 1" },
+  { word:"endangered", pos:"adj.", chinese:"瀕臨絕種的",
+    def:"(of animals or plants) in danger of disappearing forever", defZH:"（動植物）有永遠消失危險的",
+    sentence:"Many ______ animals live in the rainforest.",
+    teacher:"F", unit:"Set 1" },
+  { word:"extinct", pos:"adj.", chinese:"絕種的、滅絕的",
+    def:"no longer existing anywhere in the world", defZH:"已經不存在於世界上的",
+    sentence:"Dinosaurs became ______ millions of years ago.",
+    teacher:"F", unit:"Set 1" },
+  { word:"roam", pos:"v.", chinese:"漫遊、四處遊蕩",
+    def:"to move or travel around without a clear plan", defZH:"沒有明確計畫地四處移動",
+    sentence:"Wild horses ______ freely across the open fields.",
+    teacher:"F", unit:"Set 1" },
+  // ── F老師 Set 2 ──
+  { word:"develop", pos:"v.", chinese:"發展、發育",
+    def:"to grow; to become bigger and better", defZH:"成長；變得更大、更好",
+    sentence:"Tadpoles ______ into frogs.",
+    teacher:"F", unit:"Set 2" },
+  { word:"chemical", pos:"n.", chinese:"化學物質",
+    def:"a substance created by people", defZH:"由人類製造出來的物質",
+    sentence:"Farmers should not use too many ______ on their crops.", answer:"chemicals",
+    teacher:"F", unit:"Set 2" },
+  { word:"sensitive", pos:"adj.", chinese:"敏感的",
+    def:"easily affected by the things around it", defZH:"容易受周遭事物影響的",
+    sentence:"It can be difficult for some people to be in very noisy places because they are ______.",
+    teacher:"F", unit:"Set 2" },
+  { word:"comeback", pos:"n.", chinese:"恢復、反敗為勝",
+    def:"a return to a healthy state", defZH:"回到健康的狀態",
+    sentence:"608 was winning the homeroom basketball tournament 20-0, until 607 made a ______ and won 20-23.",
+    teacher:"F", unit:"Set 2" },
+  { word:"deformed", pos:"adj.", chinese:"畸形的、變形的",
+    def:"in a shape that is not normal", defZH:"形狀不正常的",
+    sentence:"Pollution caused some frogs to be born with ______ legs.",
+    teacher:"F", unit:"Set 2" },
+  { word:"fertilizer", pos:"n.*", chinese:"肥料",
+    def:"something that is added to soil to help the growth of plants", defZH:"加進土壤中幫助植物生長的東西",
+    sentence:"______ is useful, but compost is safer.", answer:"Fertilizer",
+    teacher:"F", unit:"Set 2" },
+  { word:"native", pos:"adj.", chinese:"原生的、本土的",
+    def:"belonging naturally to a specific place", defZH:"自然地屬於某個特定地方的",
+    sentence:"The kudzu plant is not ______ to America, but was introduced from Japan.",
+    teacher:"F", unit:"Set 2" },
+  { word:"introduce", pos:"v.", chinese:"引進",
+    def:"to bring a plant or animal to a place", defZH:"把植物或動物帶到某個地方",
+    sentence:"The kudzu plant is not native to America, but was ______ from Japan.", answer:"introduced",
+    teacher:"F", unit:"Set 2" },
+  { word:"devour", pos:"v.", chinese:"狼吞虎嚥",
+    def:"to eat something quickly and with a lot of energy", defZH:"快速且用力地吃東西",
+    sentence:"I was so hungry after the hike that I ______ a whole pizza.", answer:"devoured",
+    teacher:"F", unit:"Set 2" },
+  { word:"convince", pos:"v.", chinese:"說服",
+    def:"to persuade", defZH:"說服",
+    sentence:"I ______ my mom to let me plant a garden.", answer:"convinced",
+    teacher:"F", unit:"Set 2" },
+  // ── F老師 Set 3 ──
+  { word:"citizen", pos:"n.", chinese:"居民、公民",
+    def:"a person who lives in a particular place", defZH:"住在某個特定地方的人",
+    sentence:"The ______ of the small town welcomed the new family.", answer:"citizens",
+    teacher:"F", unit:"Set 3" },
+  { word:"migrate", pos:"v.", chinese:"遷徙",
+    def:"to move from one habitat to another with the seasons", defZH:"隨著季節從一個棲息地移到另一個",
+    sentence:"Many birds ______ south for the winter.",
+    teacher:"F", unit:"Set 3" },
+  { word:"restore", pos:"v.", chinese:"恢復、修復",
+    def:"to return to the original condition", defZH:"回到原本的狀態",
+    sentence:"The family worked hard to ______ the old house.",
+    teacher:"F", unit:"Set 3" },
+  { word:"settle", pos:"v.", chinese:"定居",
+    def:"to move to a place and make it your home", defZH:"搬到某地並把那裡當成家",
+    sentence:"After a long journey, they ______ in a quiet village by the sea.", answer:"settled",
+    teacher:"F", unit:"Set 3" },
+  { word:"depend on", pos:"phr. v.", chinese:"依賴、依靠",
+    def:"to need something in order to survive", defZH:"需要某物才能生存",
+    sentence:"Farmers ______ rain to grow their crops.",
+    teacher:"F", unit:"Set 3" },
+  { word:"propose", pos:"v.", chinese:"提議",
+    def:"to suggest an idea to others", defZH:"向別人提出一個想法",
+    sentence:"My dad ______ moving to a bigger city for a fresh start.", answer:"proposed",
+    teacher:"F", unit:"Set 3" },
+  { word:"fossil fuel", pos:"n.*", chinese:"化石燃料",
+    def:"coal and oil; material from underground that can be burned to make energy", defZH:"煤和石油；來自地底、可燃燒產生能源的物質",
+    sentence:"Cars that burn ______ pollute the air.",
+    teacher:"F", unit:"Set 3" },
+  { word:"fungus", pos:"n.", chinese:"真菌",
+    def:"an organism that gets nutrition from decaying matter", defZH:"從腐爛物質中獲得養分的生物",
+    sentence:"A ______ grew on the fallen log in the forest.",
+    teacher:"F", unit:"Set 3" },
+  { word:"release", pos:"v.", chinese:"釋放、放走",
+    def:"to let someone or something go free", defZH:"讓某人或某物自由離開",
+    sentence:"The children ______ the butterfly back into the garden.", answer:"released",
+    teacher:"F", unit:"Set 3" },
+  { word:"attract", pos:"v.", chinese:"吸引",
+    def:"to get the attention of others", defZH:"吸引別人的注意",
+    sentence:"The new park ______ many families to the neighborhood.", answer:"attracted",
+    teacher:"F", unit:"Set 3" },
+  // ── F老師 Set 4 ──
+  { word:"transmitter", pos:"n.", chinese:"發射器、發報器",
+    def:"a device that sends and makes waves that carry messages", defZH:"發送並產生能傳遞訊息之電波的裝置",
+    sentence:"The scientists implanted a ______ into the Gila monster's body to track it.",
+    teacher:"F", unit:"Set 4" },
+  { word:"iconic", pos:"adj.", chinese:"具代表性的、經典的",
+    def:"famous, popular, representative of a place or time", defZH:"有名的、受歡迎的、能代表某地或某時代的",
+    sentence:"Taipei 101 is an ______ building in Taiwan.",
+    teacher:"F", unit:"Set 4" },
+  { word:"nocturnal", pos:"adj.", chinese:"夜行性的",
+    def:"awake and active at night", defZH:"在夜間清醒並活動的",
+    sentence:"Owls are ______, so they hunt at night.",
+    teacher:"F", unit:"Set 4" },
+  { word:"burrow", pos:"n.", chinese:"地洞",
+    def:"a hole or tunnel dug by animals as places to live", defZH:"動物挖來居住的洞或地道",
+    sentence:"Gila monsters don't have permanent homes, but they live in abandoned packrat ______.", answer:"burrows",
+    teacher:"F", unit:"Set 4" },
+  { word:"victim", pos:"n.", chinese:"受害者",
+    def:"someone or something that is harmed by an unpleasant event", defZH:"被不好的事件傷害的人或物",
+    sentence:"They aren't aggressive, but they bite ______ when they feel threatened.", answer:"victims",
+    teacher:"F", unit:"Set 4" },
+  { word:"aggressive", pos:"adj.", chinese:"具攻擊性的",
+    def:"ready to argue or start fights", defZH:"隨時準備爭吵或打架的",
+    sentence:"They aren't ______, but they bite victims when they feel threatened.",
+    teacher:"F", unit:"Set 4" },
+  { word:"implant", pos:"v.", chinese:"植入",
+    def:"to put something in a living thing's body", defZH:"把某物放進生物的身體裡",
+    sentence:"The scientists ______ a transmitter into the Gila monster's body to track it.", answer:"implanted",
+    teacher:"F", unit:"Set 4" },
+  { word:"humidity", pos:"n.*", chinese:"濕度",
+    def:"water in the air", defZH:"空氣中的水分",
+    sentence:"The high ______ in Taiwan makes summer feel very hot.",
+    teacher:"F", unit:"Set 4" },
+  { word:"abandoned", pos:"adj.", chinese:"被遺棄的、廢棄的",
+    def:"left forever by the owner", defZH:"被主人永遠留下不管的",
+    sentence:"Gila monsters don't have permanent homes, but they live in ______ packrat burrows.",
+    teacher:"F", unit:"Set 4" },
+  { word:"decent", pos:"adj.", chinese:"還不錯的、像樣的",
+    def:"fairly good; satisfactory", defZH:"還不錯的；令人滿意的",
+    sentence:"I got a ______ score on my spelling test.",
+    teacher:"F", unit:"Set 4" },
+  // ── F老師 Set 5 ──
+  { word:"volunteer", pos:"n.", chinese:"志工、義工",
+    def:"a person who works or helps for free", defZH:"一個免費工作或幫忙的人",
+    sentence:"We could help a charity organization by being a ______.",
+    teacher:"F", unit:"Set 5" },
+  { word:"biodiversity", pos:"n.*", chinese:"生物多樣性",
+    def:"having a large number of different kinds of plants and animals in an environment", defZH:"一個環境中擁有大量不同種類的植物和動物",
+    sentence:"The rainforest has amazing ______.",
+    teacher:"F", unit:"Set 5" },
+  { word:"urban", pos:"adj.", chinese:"都市的、城市的",
+    def:"relating to cities or towns", defZH:"與城市或城鎮有關的",
+    sentence:"I live in a clean ______ environment.",
+    teacher:"F", unit:"Set 5" },
+  { word:"document", pos:"v.", chinese:"記錄",
+    def:"to record or take notes carefully", defZH:"仔細地記錄或做筆記",
+    sentence:"Scientists ______ the animals they see in the forest.",
+    teacher:"F", unit:"Set 5" },
+  { word:"sample", pos:"n.", chinese:"樣本",
+    def:"a small amount of something that doctors or scientists can study", defZH:"醫生或科學家可以研究的少量東西",
+    sentence:"The doctor took a blood ______ to check my health.",
+    teacher:"F", unit:"Set 5" },
+  { word:"displace", pos:"v.", chinese:"使移位、迫使離開",
+    def:"to move out of its normal position or location", defZH:"移出原本正常的位置或地點",
+    sentence:"The flood ______ many animals from their homes.", answer:"displaced",
+    teacher:"F", unit:"Set 5" },
+  { word:"boulder", pos:"n.", chinese:"巨石、大圓石",
+    def:"a large, rounded rock", defZH:"一塊大而圓的石頭",
+    sentence:"Some animals make burrows in ______ and live inside.", answer:"boulders",
+    teacher:"F", unit:"Set 5" },
+  { word:"grip", pos:"v.", chinese:"緊握、抓牢",
+    def:"to hold firmly", defZH:"緊緊地握住",
+    sentence:"You can ______ your phone tightly or ______ a tree so you won't fall.",
+    teacher:"F", unit:"Set 5" },
+  { word:"squirmy", pos:"adj.", chinese:"扭來扭去的、坐立不安的",
+    def:"making a lot of twisting movements because you are nervous, uncomfortable, bored, etc.", defZH:"因為緊張、不舒服、無聊等原因而扭來扭去",
+    sentence:"The little boy got ______ during the long movie.",
+    teacher:"F", unit:"Set 5" },
+  { word:"track", pos:"v.", chinese:"追蹤",
+    def:"to follow the footprints or other traces of", defZH:"跟隨……的腳印或其他痕跡",
+    sentence:"They can ______ the animal or implant a transmitter into its body.",
+    teacher:"F", unit:"Set 5" },
+  // ── F老師 Set 6 ──
+  { word:"analysis", pos:"n.", chinese:"分析",
+    def:"a careful study of the parts of something in order to understand more about the entire thing", defZH:"仔細研究某物的各個部分，以更了解整體",
+    sentence:"We do an ______ during the close read stage.",
+    teacher:"F", unit:"Set 6" },
+  { word:"regularly", pos:"adv.", chinese:"定期地、規律地",
+    def:"at evenly spaced points of time; routinely", defZH:"在間隔平均的時間點；例行地",
+    sentence:"You should brush your teeth ______ to keep them strong and healthy.",
+    teacher:"F", unit:"Set 6" },
+  { word:"genetic", pos:"adj.", chinese:"基因的、遺傳的",
+    def:"relating to DNA", defZH:"與 DNA 有關的",
+    sentence:"Eye color is a ______ trait passed down from parents.",
+    teacher:"F", unit:"Set 6" },
+  { word:"diversity", pos:"n.*", chinese:"多樣性",
+    def:"a variety", defZH:"各式各樣",
+    sentence:"Our school has a great ______ of students from many countries.",
+    teacher:"F", unit:"Set 6" },
+  { word:"venomous", pos:"adj.", chinese:"有毒的",
+    def:"having poisonous teeth or stingers", defZH:"有毒牙或毒刺的",
+    sentence:"Some snakes are ______, so never touch them in the wild.",
+    teacher:"F", unit:"Set 6" },
+  { word:"dazzling", pos:"adj.", chinese:"耀眼的、令人驚豔的",
+    def:"amazing or impressive", defZH:"驚人或令人印象深刻的",
+    sentence:"The fireworks show was ______.",
+    teacher:"F", unit:"Set 6" },
+  { word:"fragile", pos:"adj.", chinese:"易碎的、脆弱的",
+    def:"easily broken; delicate", defZH:"容易破碎的；脆弱的",
+    sentence:"Be careful with the glass vase because it is very ______.",
+    teacher:"F", unit:"Set 6" },
+  { word:"fragmented", pos:"adj.", chinese:"破碎的、片段的",
+    def:"broken into pieces", defZH:"碎成一片一片的",
+    sentence:"This sentence is too ______ to understand the meaning because there is no flow.",
+    teacher:"F", unit:"Set 6" },
+  { word:"generation", pos:"n.", chinese:"世代、一代",
+    def:"a group of living things that are born and alive at the same time", defZH:"在同一時期出生並存活的一群生物",
+    sentence:"Your ______ is called Gen Alpha.",
+    teacher:"F", unit:"Set 6" },
+  { word:"magnificent", pos:"adj.", chinese:"壯麗的",
+    def:"very beautiful or impressive", defZH:"非常美麗或令人印象深刻的",
+    sentence:"Seeing the moon rising over the ocean during the Full Moon Festival is ______.",
+    teacher:"F", unit:"Set 6" },
+  // ── C老師 Week 1 ──
+  { word:"fan", pos:"n.", chinese:"粉絲、迷",
+    def:"someone who admires and supports a person, sports team, etc.", defZH:"欣賞並支持某人、運動隊伍等的人",
+    sentence:"As a big ______ of BLACKPINK, Jorge owns a collection of their albums and is excited to attend their concert this year.",
+    teacher:"C", unit:"Week 1" },
+  { word:"popular", pos:"adj.", chinese:"受歡迎的",
+    def:"liked, enjoyed, or supported by many people", defZH:"被很多人喜歡、享受或支持的",
+    sentence:"Spider-Man is a ______ comic-book character loved by many people, and filmmakers have made several successful movies about him.",
+    teacher:"C", unit:"Week 1" },
+  { word:"all over", pos:"phr.", chinese:"遍及、到處",
+    def:"in every part of something; everywhere", defZH:"在某物的每個部分；到處",
+    sentence:"Fans ______ the world watch the FIFA World Cup and cheer for their favorite teams with excitement and pride.",
+    teacher:"C", unit:"Week 1" },
+  { word:"athlete", pos:"n.", chinese:"運動員",
+    def:"a person who participates in sports or other physical activities", defZH:"參加運動或其他體能活動的人",
+    sentence:"Stephen Curry is an outstanding ______ who is known for making long-distance shots in basketball.",
+    teacher:"C", unit:"Week 1" },
+  { word:"hockey", pos:"n.*", chinese:"曲棍球",
+    def:"a game played on grass or ice by two teams of 11 players, with sticks and a ball", defZH:"由兩隊各 11 人，用球棍和球在草地或冰上進行的比賽",
+    sentence:"Professional ______ players can easily get injured because the sport is fast-paced and involves a great deal of physical contact.",
+    teacher:"C", unit:"Week 1" },
+  { word:"documentary", pos:"n.", chinese:"紀錄片",
+    def:"a movie or TV show that tells the facts of people and events", defZH:"講述人物和事件真實情況的電影或電視節目",
+    sentence:"March of the Penguins is a ______ that shows how penguins survive in the cold Antarctic environment.",
+    teacher:"C", unit:"Week 1" },
+  { word:"talented", pos:"adj.", chinese:"有天賦的",
+    def:"with talent; able or skillful", defZH:"有天分的；有能力或熟練的",
+    sentence:"My classmate is so ______ at dancing that she won first place in the school's K-pop dance competition.",
+    teacher:"C", unit:"Week 1" },
+  { word:"comedy", pos:"n.", chinese:"喜劇",
+    def:"a play, film, or television program that is intended to make people laugh", defZH:"意在逗人發笑的戲劇、電影或電視節目",
+    sentence:"We watched a very funny ______ that made everyone laugh a lot.",
+    teacher:"C", unit:"Week 1" },
+  { word:"marriage", pos:"n.", chinese:"婚姻",
+    def:"the state of being married", defZH:"已婚的狀態",
+    sentence:"My parents are going out for an anniversary dinner tonight. They are celebrating 30 years of ______.",
+    teacher:"C", unit:"Week 1" },
+  { word:"row", pos:"n.", chinese:"排、列",
+    def:"a straight line of people or things", defZH:"排成一直線的人或物",
+    sentence:"The students all sat in the front ______ and waited for the teacher to begin the class.",
+    teacher:"C", unit:"Week 1" },
+  // ── C老師 Week 2 ──
+  { word:"equality", pos:"n.*", chinese:"平等",
+    def:"a situation in which people have the same rights", defZH:"人們擁有相同權利的情況",
+    sentence:"In our class, we learned that ______ means everyone should have the same opportunities, whether at school or at home.",
+    teacher:"C", unit:"Week 2" },
+  { word:"stereotype", pos:"n.", chinese:"刻板印象",
+    def:"a fixed idea about a group of people that is often not true", defZH:"對某一群人固定、但常常不正確的看法",
+    sentence:"My grandmother believes the ______ that all athletes are poor at studying, but many athletes work hard in both sports and academics.",
+    teacher:"C", unit:"Week 2" },
+  { word:"bias", pos:"n.", chinese:"偏見",
+    def:"unfair feelings for or against one group of people or one side of an argument", defZH:"對某一群人或爭論的某一方不公平的偏好或反感",
+    sentence:"People often show ______ when they let stereotypes affect how they treat others.",
+    teacher:"C", unit:"Week 2" },
+  { word:"profession", pos:"n.", chinese:"職業、專業",
+    def:"a type of job that needs special training or skill", defZH:"需要特殊訓練或技能的工作",
+    sentence:"Teaching is a respected ______ because teachers need special training and skills to help students learn.",
+    teacher:"C", unit:"Week 2" },
+  { word:"feminine", pos:"adj.", chinese:"女性化的",
+    def:"having characteristics that are traditionally thought to be suitable for a woman", defZH:"具有傳統上被認為適合女性的特質",
+    sentence:"Her room was decorated in a ______ style, with soft pink walls, colorful curtains, and delicate furniture.",
+    teacher:"C", unit:"Week 2" },
+  { word:"masculine", pos:"adj.", chinese:"男性化的",
+    def:"having characteristics that are traditionally thought to be suitable for men", defZH:"具有傳統上被認為適合男性的特質",
+    sentence:"He chose a ______ short haircut because he likes the way it looks, and it makes him feel strong and confident.",
+    teacher:"C", unit:"Week 2" },
+  { word:"assume", pos:"v.", chinese:"假定、以為",
+    def:"to accept something to be true without question or proof", defZH:"沒有質疑或證據就認定某事是真的",
+    sentence:"Don't ______ that everyone knows how you feel.",
+    teacher:"C", unit:"Week 2" },
+  { word:"underestimate", pos:"v.", chinese:"低估",
+    def:"to fail to understand how strong, skillful, intelligent, or determined someone is", defZH:"沒有看出某人有多強、多熟練、多聰明或多堅定",
+    sentence:"The team ______ their opponents and didn't practice enough before the championship game.", answer:"underestimated",
+    teacher:"C", unit:"Week 2" },
+  { word:"encounter", pos:"v.", chinese:"遭遇、遇到",
+    def:"to experience something, especially something unpleasant", defZH:"經歷某事，尤其是不愉快的事",
+    sentence:"She ______ many challenges when she moved to a new country, such as getting used to a new culture and making new friends.", answer:"encountered",
+    teacher:"C", unit:"Week 2" },
+  { word:"pursue", pos:"v.", chinese:"追求",
+    def:"to spend time and effort trying to achieve something", defZH:"花時間和努力試著達成某事",
+    sentence:"At KCIS, students can ______ their interests in art, sports, science, or technology by joining school clubs or after-school programs.",
+    teacher:"C", unit:"Week 2" },
+  // ── C老師 Week 3-4 ──
+  { word:"afraid of", pos:"phr.", chinese:"害怕……",
+    def:"feeling fear", defZH:"感到恐懼",
+    sentence:"Mark didn't want to speak up during the presentation because he was ______ making a mistake in front of the class.",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"frightened", pos:"adj.", chinese:"受驚嚇的",
+    def:"scared", defZH:"害怕的",
+    sentence:"Liam was ______ by the loud thunder during the storm.",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"patient", pos:"adj.", chinese:"有耐心的",
+    def:"able to wait calmly for a long time", defZH:"能夠長時間冷靜等待的",
+    sentence:"Ms. Lee is known for being ______ with her students.",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"absent", pos:"adj.", chinese:"缺席的",
+    def:"not present at a usual or expected place", defZH:"沒有出現在平常或預期的地方",
+    sentence:"David caught the flu over the weekend and was ______ from school for the entire week.",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"teenager", pos:"n.", chinese:"青少年",
+    def:"someone who is between 13 and 19 years old", defZH:"年齡介於 13 到 19 歲的人",
+    sentence:"Now that Pete is a ______, he spends more time with his friends and is becoming more independent.",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"co-worker", pos:"n.", chinese:"同事",
+    def:"someone who works with you and has a similar position", defZH:"和你一起工作、職位相近的人",
+    sentence:"Jenna likes her job because her ______ are very helpful.", answer:"co-workers",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"relaxed", pos:"adj.", chinese:"放鬆的",
+    def:"calm and free from stress or worry", defZH:"平靜且沒有壓力或擔憂的",
+    sentence:"After spending a whole week on a quiet, peaceful beach, Maya felt completely ______ and ready to get back to work.",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"interview", pos:"n.", chinese:"面試",
+    def:"a meeting in which someone asks you questions to see if you are suitable for a job", defZH:"有人問你問題、了解你是否適合某份工作的會面",
+    sentence:"James spent a lot of time preparing for this job ______.",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"assistant", pos:"n.", chinese:"助理",
+    def:"a person who assists others in their work by handling less important tasks", defZH:"藉由處理較不重要的工作來協助他人的人",
+    sentence:"The director was too busy to manage his schedule, so he decided to hire an ______ to handle his phone calls and meetings.",
+    teacher:"C", unit:"Week 3-4" },
+  { word:"salesman", pos:"n.", chinese:"推銷員、業務員",
+    def:"a man whose job is to persuade people to buy his company's products", defZH:"工作是說服人們購買公司產品的男性",
+    sentence:"The ______ work hard to promote their new products, traveling to different cities every month to boost the company's sales.", answer:"salesmen",
+    teacher:"C", unit:"Week 3-4" },
+  // ── C老師 Week 5 ──
+  { word:"photographer", pos:"n.", chinese:"攝影師",
+    def:"a person who takes photographs, often as a job", defZH:"拍照的人，通常以此為職業",
+    sentence:"When the sun came out after the rain, ______ hurried outside to capture the bright rainbow.", answer:"photographers",
+    teacher:"C", unit:"Week 5" },
+  { word:"public", pos:"adj.", chinese:"公共的、公開的",
+    def:"for everyone to use; not private", defZH:"給所有人使用的；不是私人的",
+    sentence:"The ______ swimming pool was crowded because families from different neighborhoods came to swim, but everyone followed the safety rules.",
+    teacher:"C", unit:"Week 5" },
+  { word:"striking", pos:"adj.", chinese:"引人注目的、醒目的",
+    def:"very easy to notice because it is unusual or beautiful", defZH:"因為特別或美麗而非常引人注意的",
+    sentence:"The artist used such ______ colors in the painting that it immediately caught everyone's attention at the gallery.",
+    teacher:"C", unit:"Week 5" },
+  { word:"occasion", pos:"n.", chinese:"場合、時刻",
+    def:"a special time or event", defZH:"特別的時刻或活動",
+    sentence:"On special ______ like birthdays, we celebrate with cake, balloons, and lots of laughter with friends and family.", answer:"occasions",
+    teacher:"C", unit:"Week 5" },
+  { word:"unit", pos:"n.", chinese:"單元",
+    def:"one part of a school book or course", defZH:"課本或課程中的一個部分",
+    sentence:"We will be learning this ______ next Monday, so we should preview it this weekend.",
+    teacher:"C", unit:"Week 5" },
+  { word:"masterpiece", pos:"n.", chinese:"傑作",
+    def:"an excellent piece of art, music, or writing", defZH:"非常優秀的藝術、音樂或寫作作品",
+    sentence:"Everyone agreed that the painting was a ______, but the artist remained humble and thanked them for their kind words.",
+    teacher:"C", unit:"Week 5" },
+  { word:"environmentalist", pos:"n.", chinese:"環保人士",
+    def:"a person who works to protect nature and the environment", defZH:"致力於保護自然和環境的人",
+    sentence:"The school invited an ______ to give a speech about why protecting rainforests is important for the future of our planet.",
+    teacher:"C", unit:"Week 5" },
+  { word:"especially", pos:"adv.", chinese:"特別、尤其",
+    def:"more than usual; more than others", defZH:"比平常更；比其他更",
+    sentence:"Lily enjoys reading all kinds of books, but she ______ likes exciting mystery stories because they keep her guessing until the end.",
+    teacher:"C", unit:"Week 5" },
+  { word:"underwater", pos:"adj.", chinese:"水下的、水中的",
+    def:"below the surface of the water", defZH:"在水面以下的",
+    sentence:"During their vacation, the family enjoyed various ______ activities, such as scuba diving to explore the lively coral reefs.",
+    teacher:"C", unit:"Week 5" },
+  { word:"pianist", pos:"n.", chinese:"鋼琴家",
+    def:"a person who plays the piano", defZH:"彈鋼琴的人",
+    sentence:"The ______ practiced for hours every day, and the hard work helped her play the difficult music with confidence.",
+    teacher:"C", unit:"Week 5" },
+  // ── C老師 Week 6 ──
+  { word:"engineer", pos:"n.", chinese:"工程師",
+    def:"a person who designs, builds, or maintains engines, machines, or public works", defZH:"設計、建造或維護引擎、機器或公共工程的人",
+    sentence:"To be an ______ at this construction company, you have to design safe buildings and work with others to solve problems.",
+    teacher:"C", unit:"Week 6" },
+  { word:"attractive", pos:"adj.", chinese:"吸引人的、迷人的",
+    def:"very pleasing in appearance or sound", defZH:"外觀或聲音非常令人喜愛的",
+    sentence:"The hotel had an ______ garden filled with blooming flowers and shady trees, and visitors enjoyed taking pictures before going inside.",
+    teacher:"C", unit:"Week 6" },
+  { word:"occupation", pos:"n.", chinese:"職業",
+    def:"a person's job", defZH:"一個人的工作",
+    sentence:"Doctors, pilots, and chefs are all examples of ______ that require special training.", answer:"occupations",
+    teacher:"C", unit:"Week 6" },
+  { word:"lawyer", pos:"n.", chinese:"律師",
+    def:"a person whose job is to assist people in matters relating to the law", defZH:"工作是協助人們處理法律相關事務的人",
+    sentence:"Her father is a very kind ______.",
+    teacher:"C", unit:"Week 6" },
+  { word:"fine", pos:"adj.", chinese:"精緻的、高級的",
+    def:"expensive and of high quality", defZH:"昂貴且高品質的",
+    sentence:"The restaurant served ______ dishes prepared by skilled chefs, so many people visited to enjoy the high-quality meals.",
+    teacher:"C", unit:"Week 6" },
+  { word:"capture", pos:"v.", chinese:"捕捉（畫面）、拍下",
+    def:"to record or take a picture of something using a camera", defZH:"用相機記錄或拍下某樣東西",
+    sentence:"Lena wanted to ______ the beautiful sunset before the sky grew dark, so she quickly took out her camera and found the best spot to take photos.",
+    teacher:"C", unit:"Week 6" },
+  { word:"regular", pos:"adj.", chinese:"規則的",
+    def:"following the usual rules or patterns for words in the language", defZH:"遵循語言中字詞的一般規則或模式",
+    sentence:"Ben learned that \"walk\" is a ______ verb because we add -ed to form its past tense, walked, and he used the same rule with other verbs.",
+    teacher:"C", unit:"Week 6" },
+  { word:"server", pos:"n.", chinese:"服務生",
+    def:"someone whose job is to bring you your food in a restaurant", defZH:"在餐廳裡工作是為你送餐的人",
+    sentence:"During the busy holiday season, the restaurant needed extra ______ to handle the large number of customers.", answer:"servers",
+    teacher:"C", unit:"Week 6" },
+  { word:"college", pos:"n.*", chinese:"大學",
+    def:"a school that you go to after high school", defZH:"高中畢業後去讀的學校",
+    sentence:"Carlos dreams of going to ______ after high school, so he works hard in his classes and saves money to help pay for his education.",
+    teacher:"C", unit:"Week 6" },
+  { word:"sharp", pos:"adj.", chinese:"鋒利的、尖銳的",
+    def:"having a very thin edge or point that can cut things easily", defZH:"有很薄的邊緣或尖端、能輕易切開東西的",
+    sentence:"Be careful with scissors because they have very ______ edges that can cut paper easily.",
+    teacher:"C", unit:"Week 6" },
+  // ── C老師 Week 7-8 ──
+  { word:"observe", pos:"v.", chinese:"慶祝（節日）、遵守",
+    def:"to celebrate a holiday or follow a custom", defZH:"慶祝節日或遵守習俗",
+    sentence:"Many people around the world ______ Christmas by attending church, exchanging gifts, and spending time with family.",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"frequently", pos:"adv.", chinese:"經常地、頻繁地",
+    def:"often; many times", defZH:"時常；很多次",
+    sentence:"The scientist checks the equipment ______ to make sure every experiment is running safely.",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"serious", pos:"adj.", chinese:"嚴重的",
+    def:"very bad or important and needing attention", defZH:"非常糟糕或重要、需要被重視的",
+    sentence:"Air pollution is a ______ environmental problem that affects millions of people around the world.",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"culture", pos:"n.", chinese:"文化",
+    def:"the way of life, beliefs, and customs of a group of people", defZH:"一群人的生活方式、信仰和習俗",
+    sentence:"Traveling to different countries helps people learn about other ______ and understand different ways of life.", answer:"cultures",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"last", pos:"v.", chinese:"持續",
+    def:"to continue for a period of time", defZH:"持續一段時間",
+    sentence:"The meeting will ______ for about an hour, so please be on time to make sure we can cover everything.",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"prosperous", pos:"adj.", chinese:"繁榮的、興旺的",
+    def:"successful and making a lot of money", defZH:"成功且賺很多錢的",
+    sentence:"They worked hard and turned their small business into a ______ company.",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"parade", pos:"n.", chinese:"遊行",
+    def:"a public celebration where people walk or ride through the streets", defZH:"人們在街上行走或乘車經過的公開慶祝活動",
+    sentence:"Visitors gathered in the square to watch a colorful ______ at Disneyland, complete with bands, performers, and beautiful floats.",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"set off", pos:"phr. v.", chinese:"施放（煙火）、引爆",
+    def:"to make something explode, such as fireworks", defZH:"使某物爆炸，例如煙火",
+    sentence:"The children ______ fireworks during the festival.",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"at the stroke of", pos:"phr.", chinese:"在……整點時",
+    def:"exactly at a particular time", defZH:"正好在某個時間點",
+    sentence:"______ midnight, the New Year's fireworks lit up the sky as people cheered to welcome the New Year.", answer:"At the stroke of",
+    teacher:"C", unit:"Week 7-8" },
+  { word:"tradition", pos:"n.", chinese:"傳統",
+    def:"a custom or belief passed down from older people to younger people", defZH:"由長輩傳給晚輩的習俗或信仰",
+    sentence:"It is a Chinese ______ to balance a raw egg upright during the Dragon Boat Festival.",
+    teacher:"C", unit:"Week 7-8" },
+];
+
+const sentenceZH = {
+  "pollution": "空氣污染讓有些人呼吸困難。",
+  "species": "老虎是瀕臨絕種的物種。",
+  "endangered": "許多瀕臨絕種的動物住在雨林裡。",
+  "extinct": "恐龍在數百萬年前就滅絕了。",
+  "roam": "野馬在開闊的原野上自由漫遊。",
+  "develop": "蝌蚪會發育成青蛙。",
+  "chemical": "農夫不應該在農作物上使用太多化學物質。",
+  "sensitive": "對某些人來說，待在很吵的地方可能很困難，因為他們很敏感。",
+  "comeback": "608 班在班際籃球賽中原本以 20 比 0 領先，直到 607 班反敗為勝，以 20 比 23 獲勝。",
+  "deformed": "污染導致一些青蛙出生時腿部畸形。",
+  "fertilizer": "肥料很有用，但堆肥比較安全。",
+  "native": "葛藤不是美國的原生植物，而是從日本引進的。",
+  "introduce": "葛藤不是美國的原生植物，而是從日本引進的。",
+  "devour": "健行後我餓到狼吞虎嚥吃掉一整個披薩。",
+  "convince": "我說服媽媽讓我種一個小花園。",
+  "citizen": "小鎮的居民歡迎這個新家庭。",
+  "migrate": "許多鳥會往南遷徙過冬。",
+  "restore": "這家人努力修復那棟老房子。",
+  "settle": "經過漫長的旅程，他們在海邊一個安靜的村莊定居。",
+  "depend on": "農夫依靠雨水來種植作物。",
+  "propose": "爸爸提議搬到更大的城市重新開始。",
+  "fossil fuel": "燃燒化石燃料的汽車會污染空氣。",
+  "fungus": "森林裡倒下的木頭上長出了一種真菌。",
+  "release": "孩子們把蝴蝶放回花園裡。",
+  "attract": "新公園吸引了許多家庭搬到這個社區。",
+  "transmitter": "科學家把發報器植入毒蜥的身體來追蹤牠。",
+  "iconic": "台北101是台灣具代表性的建築。",
+  "nocturnal": "貓頭鷹是夜行性動物，所以在夜間獵食。",
+  "burrow": "毒蜥沒有固定的家，而是住在林鼠廢棄的地洞裡。",
+  "victim": "牠們不具攻擊性，但感到威脅時會咬受害者。",
+  "aggressive": "牠們不具攻擊性，但感到威脅時會咬受害者。",
+  "implant": "科學家把發報器植入毒蜥的身體來追蹤牠。",
+  "humidity": "台灣的高濕度讓夏天感覺非常炎熱。",
+  "abandoned": "毒蜥沒有固定的家，而是住在林鼠廢棄的地洞裡。",
+  "decent": "我的拼字考試得到還不錯的分數。",
+  "volunteer": "我們可以藉由當志工來幫助慈善機構。",
+  "biodiversity": "熱帶雨林擁有驚人的生物多樣性。",
+  "urban": "我住在一個乾淨的都市環境裡。",
+  "document": "科學家記錄他們在森林裡看到的動物。",
+  "sample": "醫生抽了血液樣本來檢查我的健康。",
+  "displace": "洪水迫使許多動物離開牠們的家。",
+  "boulder": "有些動物在巨石裡挖洞穴並住在裡面。",
+  "grip": "你可以緊握你的手機，或抓牢一棵樹，這樣你就不會跌倒。",
+  "squirmy": "小男孩在看那部很長的電影時變得坐立不安。",
+  "track": "他們可以追蹤動物，或在牠的身體裡植入發報器。",
+  "analysis": "我們在精讀階段做分析。",
+  "regularly": "你應該定期刷牙，讓牙齒保持強壯健康。",
+  "genetic": "眼睛顏色是從父母遺傳下來的基因特徵。",
+  "diversity": "我們學校有來自許多國家、非常多樣的學生。",
+  "venomous": "有些蛇有毒，所以在野外千萬不要碰牠們。",
+  "dazzling": "煙火秀令人驚豔。",
+  "fragile": "小心那個玻璃花瓶，它非常易碎。",
+  "fragmented": "這個句子太零碎了，因為不通順而無法理解意思。",
+  "generation": "你們這一代被稱為 Alpha 世代。",
+  "magnificent": "在中秋節看到月亮從海面升起，景色非常壯麗。",
+  "fan": "身為 BLACKPINK 的大粉絲，Jorge 收藏了她們的專輯，並很期待今年去看她們的演唱會。",
+  "popular": "蜘蛛人是受許多人喜愛的漫畫角色，電影人也拍了好幾部關於他的成功電影。",
+  "all over": "全世界的球迷都觀看世界盃足球賽，興奮又驕傲地為支持的隊伍加油。",
+  "athlete": "Stephen Curry 是一位傑出的運動員，以籃球遠距離投籃聞名。",
+  "hockey": "職業曲棍球員很容易受傷，因為這項運動節奏快，而且有大量身體碰撞。",
+  "documentary": "《企鵝寶貝》是一部紀錄片，呈現企鵝如何在寒冷的南極環境中生存。",
+  "talented": "我的同學很有舞蹈天分，在學校的 K-pop 舞蹈比賽中得到第一名。",
+  "comedy": "我們看了一部讓大家笑翻的爆笑喜劇。",
+  "marriage": "我爸媽今晚要去吃週年紀念晚餐，他們在慶祝結婚 30 週年。",
+  "row": "學生們都坐在第一排，等老師開始上課。",
+  "equality": "我們在課堂上學到，平等就是每個人不論在學校或家裡，都應該擁有相同的機會。",
+  "stereotype": "我奶奶相信「運動員都不會讀書」的刻板印象，但很多運動員在運動和課業上都很努力。",
+  "bias": "當人們讓刻板印象影響他們對待別人的方式時，往往就會表現出偏見。",
+  "profession": "教學是受人尊敬的職業，因為老師需要特殊訓練和技能來幫助學生學習。",
+  "feminine": "她的房間是女性化的風格，有柔和的粉紅色牆壁、繽紛的窗簾和精緻的家具。",
+  "masculine": "他選了男性化的短髮，因為他喜歡這個樣子，而且讓他覺得強壯又有自信。",
+  "assume": "不要以為每個人都知道你的感受。",
+  "underestimate": "這支隊伍低估了對手，在冠軍賽前沒有充分練習。",
+  "encounter": "她搬到新國家時遇到許多挑戰，例如適應新文化和交新朋友。",
+  "pursue": "在康橋，學生可以透過參加社團或課後活動，追求自己在藝術、運動、科學或科技方面的興趣。",
+  "afraid of": "Mark 在報告時不想發言，因為他害怕在全班面前犯錯。",
+  "frightened": "Liam 被暴風雨中巨大的雷聲嚇到了。",
+  "patient": "李老師以對學生有耐心而聞名。",
+  "absent": "David 週末得了流感，整個星期都沒去上學。",
+  "teenager": "既然 Pete 已經是青少年了，他花更多時間和朋友在一起，也變得更獨立。",
+  "co-worker": "Jenna 喜歡她的工作，因為她的同事都很樂於幫忙。",
+  "relaxed": "在安靜祥和的海灘度過一整週後，Maya 感到完全放鬆，準備好回去工作。",
+  "interview": "James 花了很多時間準備這次的工作面試。",
+  "assistant": "主管忙到無法管理自己的行程，所以決定請一位助理處理電話和會議。",
+  "salesman": "業務員們努力推銷新產品，每個月到不同城市出差，以提升公司的業績。",
+  "photographer": "雨後太陽出來時，攝影師們趕緊到戶外拍下明亮的彩虹。",
+  "public": "公共游泳池很擁擠，因為不同社區的家庭都來游泳，但大家都遵守安全規則。",
+  "striking": "畫家在畫中使用了非常醒目的顏色，讓這幅畫在畫廊裡立刻吸引了所有人的目光。",
+  "occasion": "在生日這類特別的場合，我們會和親朋好友用蛋糕、氣球和許多歡笑來慶祝。",
+  "unit": "我們下週一要上這個單元，所以這個週末應該先預習。",
+  "masterpiece": "大家都認為這幅畫是傑作，但畫家依然很謙虛，感謝大家的讚美。",
+  "environmentalist": "學校邀請一位環保人士來演講，說明為什麼保護雨林對地球的未來很重要。",
+  "especially": "Lily 喜歡閱讀各種書，但她特別喜歡刺激的推理故事，因為會讓她一直猜到最後。",
+  "underwater": "假期中，這家人享受了各種水下活動，例如潛水探索生氣蓬勃的珊瑚礁。",
+  "pianist": "這位鋼琴家每天練習好幾個小時，努力讓她能有自信地彈奏困難的曲子。",
+  "engineer": "要成為這家建設公司的工程師，你必須設計安全的建築，並和他人合作解決問題。",
+  "attractive": "飯店有一座開滿花朵、綠樹成蔭的迷人花園，遊客們喜歡在進去前拍照。",
+  "occupation": "醫生、飛行員和廚師都是需要特殊訓練的職業。",
+  "lawyer": "她的爸爸是一位非常善良的律師。",
+  "fine": "這家餐廳供應由技術精湛的廚師準備的精緻料理，所以很多人來享用高品質的餐點。",
+  "capture": "Lena 想在天色變暗前拍下美麗的夕陽，所以她迅速拿出相機，找到最佳的拍照位置。",
+  "regular": "Ben 學到 walk 是規則動詞，因為加 -ed 就變成過去式 walked，他也把同樣的規則用在其他動詞上。",
+  "server": "在忙碌的假期期間，餐廳需要額外的服務生來應付大量的客人。",
+  "college": "Carlos 夢想高中畢業後上大學，所以他努力上課並存錢來支付學費。",
+  "sharp": "使用剪刀要小心，因為它們有非常鋒利、能輕易剪開紙的刀刃。",
+  "observe": "全世界許多人透過上教堂、交換禮物和陪伴家人來慶祝聖誕節。",
+  "frequently": "科學家經常檢查設備，以確保每個實驗都安全進行。",
+  "serious": "空氣污染是一個影響全世界數百萬人的嚴重環境問題。",
+  "culture": "到不同國家旅行能幫助人們認識其他文化，並了解不同的生活方式。",
+  "last": "會議將持續大約一小時，所以請準時，以確保我們能討論完所有事情。",
+  "prosperous": "他們努力工作，把小生意變成了一家興旺的公司。",
+  "parade": "遊客聚集在迪士尼樂園的廣場上，觀看一場有樂隊、表演者和美麗花車的繽紛遊行。",
+  "set off": "孩子們在節慶期間施放煙火。",
+  "at the stroke of": "午夜十二點整，新年煙火照亮了天空，人們歡呼迎接新年。",
+  "tradition": "在端午節把生雞蛋立起來是中國的傳統。",
+};
+
+const inflectionData = {
+  "roam": { form:"past", inflected:"roamed", hint:"過去式" },
+  "develop": { form:"past", inflected:"developed", hint:"過去式" },
+  "chemical": { form:"plural", inflected:"chemicals", hint:"複數形" },
+  "comeback": { form:"plural", inflected:"comebacks", hint:"複數形" },
+  "introduce": { form:"past", inflected:"introduced", hint:"過去式" },
+  "devour": { form:"past", inflected:"devoured", hint:"過去式" },
+  "convince": { form:"past", inflected:"convinced", hint:"過去式" },
+  "citizen": { form:"plural", inflected:"citizens", hint:"複數形" },
+  "migrate": { form:"past", inflected:"migrated", hint:"過去式" },
+  "restore": { form:"past", inflected:"restored", hint:"過去式" },
+  "settle": { form:"past", inflected:"settled", hint:"過去式" },
+  "depend on": { form:"past", inflected:"depended on", hint:"過去式" },
+  "propose": { form:"past", inflected:"proposed", hint:"過去式" },
+  "fungus": { form:"plural", inflected:"fungi", hint:"複數形" },
+  "release": { form:"past", inflected:"released", hint:"過去式" },
+  "attract": { form:"past", inflected:"attracted", hint:"過去式" },
+  "transmitter": { form:"plural", inflected:"transmitters", hint:"複數形" },
+  "burrow": { form:"plural", inflected:"burrows", hint:"複數形" },
+  "victim": { form:"plural", inflected:"victims", hint:"複數形" },
+  "implant": { form:"past", inflected:"implanted", hint:"過去式" },
+  "volunteer": { form:"plural", inflected:"volunteers", hint:"複數形" },
+  "document": { form:"past", inflected:"documented", hint:"過去式" },
+  "sample": { form:"plural", inflected:"samples", hint:"複數形" },
+  "displace": { form:"past", inflected:"displaced", hint:"過去式" },
+  "boulder": { form:"plural", inflected:"boulders", hint:"複數形" },
+  "grip": { form:"past", inflected:"gripped", hint:"過去式" },
+  "track": { form:"past", inflected:"tracked", hint:"過去式" },
+  "analysis": { form:"plural", inflected:"analyses", hint:"複數形" },
+  "generation": { form:"plural", inflected:"generations", hint:"複數形" },
+  "fan": { form:"plural", inflected:"fans", hint:"複數形" },
+  "athlete": { form:"plural", inflected:"athletes", hint:"複數形" },
+  "documentary": { form:"plural", inflected:"documentaries", hint:"複數形" },
+  "comedy": { form:"plural", inflected:"comedies", hint:"複數形" },
+  "marriage": { form:"plural", inflected:"marriages", hint:"複數形" },
+  "row": { form:"plural", inflected:"rows", hint:"複數形" },
+  "stereotype": { form:"plural", inflected:"stereotypes", hint:"複數形" },
+  "bias": { form:"plural", inflected:"biases", hint:"複數形" },
+  "profession": { form:"plural", inflected:"professions", hint:"複數形" },
+  "assume": { form:"past", inflected:"assumed", hint:"過去式" },
+  "underestimate": { form:"past", inflected:"underestimated", hint:"過去式" },
+  "encounter": { form:"past", inflected:"encountered", hint:"過去式" },
+  "pursue": { form:"past", inflected:"pursued", hint:"過去式" },
+  "teenager": { form:"plural", inflected:"teenagers", hint:"複數形" },
+  "co-worker": { form:"plural", inflected:"co-workers", hint:"複數形" },
+  "interview": { form:"plural", inflected:"interviews", hint:"複數形" },
+  "assistant": { form:"plural", inflected:"assistants", hint:"複數形" },
+  "salesman": { form:"plural", inflected:"salesmen", hint:"複數形" },
+  "photographer": { form:"plural", inflected:"photographers", hint:"複數形" },
+  "occasion": { form:"plural", inflected:"occasions", hint:"複數形" },
+  "unit": { form:"plural", inflected:"units", hint:"複數形" },
+  "masterpiece": { form:"plural", inflected:"masterpieces", hint:"複數形" },
+  "environmentalist": { form:"plural", inflected:"environmentalists", hint:"複數形" },
+  "pianist": { form:"plural", inflected:"pianists", hint:"複數形" },
+  "engineer": { form:"plural", inflected:"engineers", hint:"複數形" },
+  "occupation": { form:"plural", inflected:"occupations", hint:"複數形" },
+  "lawyer": { form:"plural", inflected:"lawyers", hint:"複數形" },
+  "capture": { form:"past", inflected:"captured", hint:"過去式" },
+  "server": { form:"plural", inflected:"servers", hint:"複數形" },
+  "observe": { form:"past", inflected:"observed", hint:"過去式" },
+  "culture": { form:"plural", inflected:"cultures", hint:"複數形" },
+  "last": { form:"past", inflected:"lasted", hint:"過去式" },
+  "parade": { form:"plural", inflected:"parades", hint:"複數形" },
+  "tradition": { form:"plural", inflected:"traditions", hint:"複數形" },
+};
+
+// 中文意思相近、不能同時出現在選項裡的字
+const confusables = [
+  ["profession","occupation"], ["restore","comeback"], ["afraid of","frightened"],
+  ["attract","attractive"], ["diversity","biodiversity"], ["fragile","fragmented"],
+  ["frequently","regularly"], ["document","capture"], ["regular","regularly"],
+  ["endangered","extinct"], ["urban","public"], ["devour","release"]
+];
+// 變化形題不能當錯誤選項的真實單字
+const fakeBlock = ["funguses","griped"];
+
+/* ===================== HELPERS ===================== */
+const $ = s => document.querySelector(s);
+const TYPE_LABEL = {EN_CN:"English → Chinese", CN_EN:"Chinese → English", DEF:"Definition", FILL:"Fill in the Blank", INFL:"Word Forms"};
+const TYPE_SHORT = {EN_CN:"EN→CN", CN_EN:"CN→EN", DEF:"Definition", FILL:"Fill-in", INFL:"Word Form"};
+const TEACHER_NAME = {F:"Teacher F", C:"Teacher C"};
+const byWord = {};
+vocabData.forEach(v => {
+  byWord[v.word] = v;
+  v.answer = v.answer || v.word;
+  const a = v.answer.toLowerCase(), inf = inflectionData[v.word];
+  v.form = (a !== v.word.toLowerCase() && inf && inf.inflected.toLowerCase() === a) ? inf.form : "base";
+});
+const unitKey = v => v.teacher + "|" + v.unit;
+const UNITS = [];
+vocabData.forEach(v => { const k = unitKey(v); if (!UNITS.find(u => u.key === k)) UNITS.push({key:k, teacher:v.teacher, unit:v.unit}); });
+const TEACHERS = [...new Set(UNITS.map(u => u.teacher))];
+
+function shuffle(a){ a = a.slice(); for (let i = a.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+function today(){ const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function nowStr(){ const d = new Date(); return today()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), msg.length > 30 ? 6000 : 2200); }
+
+/* ===================== STATE ===================== */
+function defaultState(){
+  return { xp:0, rounds:0, totalQ:0, totalOK:0, bestStreak:0, perfects:0, examGood:0, bravery:0,
+    days:[], badges:{}, words:{}, mistakes:{}, selected:UNITS.map(u=>u.key), examSel:UNITS.map(u=>u.key),
+    plan:null, exam:null, current:null, history:[], sound:true, name:"", outbox:[] };
+}
+let S;
+function load(){ try { const raw = localStorage.getItem(STORE_KEY); S = raw ? Object.assign(defaultState(), JSON.parse(raw)) : defaultState(); } catch(e){ S = defaultState(); } }
+function save(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch(e){} }
+
+/* ===================== LEVELS & BADGES ===================== */
+const TITLES = [[1,"Rookie"],[3,"Word Explorer"],[5,"Vocab Ranger"],[8,"Word Knight"],[12,"Vocab Hero"],[16,"Word Wizard"],[20,"Word Legend"]];
+const AVATARS = [[1,"🐣"],[3,"🦊"],[5,"🐺"],[8,"🦅"],[12,"🦁"],[16,"🐉"],[20,"👑"]];
+function levelInfo(xp){
+  let lv = 1, need = 100, rest = xp;
+  while (rest >= need){ rest -= need; lv++; need = 100 + (lv-1)*40; }
+  let title = "Rookie", av = "🐣";
+  TITLES.forEach(([l,n]) => { if (lv >= l) title = n; });
+  AVATARS.forEach(([l,a]) => { if (lv >= l) av = a; });
+  return {lv, cur:rest, need, title, av};
+}
+function masteredCount(){ return vocabData.filter(v => (S.words[v.word]||{}).s >= 3).length; }
+function unitMastered(k){ const ws = vocabData.filter(v => unitKey(v) === k); return ws.filter(v => (S.words[v.word]||{}).s >= 3).length; }
+const BADGES = [
+  {id:"first",   ic:"🎮", name:"Game On",        desc:"Finish your first round",          t:()=>S.rounds>=1},
+  {id:"r10",     ic:"🏃", name:"Keep Going",     desc:"Finish 10 rounds",                 t:()=>S.rounds>=10},
+  {id:"r30",     ic:"🚀", name:"Rocket",         desc:"Finish 30 rounds",                 t:()=>S.rounds>=30},
+  {id:"perfect", ic:"💯", name:"Perfect Round",  desc:"Get every question right in a round", t:()=>S.perfects>=1},
+  {id:"s10",     ic:"⚡", name:"Lightning",      desc:"Reach a 10 streak",                t:()=>S.bestStreak>=10},
+  {id:"s20",     ic:"👑", name:"Streak King",    desc:"Reach a 20 streak",                t:()=>S.bestStreak>=20},
+  {id:"brave1",  ic:"💪", name:"Brave Start",    desc:"Beat your first mistake",          t:()=>S.bravery>=1},
+  {id:"brave10", ic:"🦁", name:"Brave Heart",    desc:"Beat 10 mistakes",                 t:()=>S.bravery>=10},
+  {id:"brave30", ic:"🐉", name:"Dragon Courage", desc:"Beat 30 mistakes",                 t:()=>S.bravery>=30},
+  {id:"m10",     ic:"⭐", name:"Star Collector", desc:"Master 10 words (★★★)",            t:()=>masteredCount()>=10},
+  {id:"m50",     ic:"🌟", name:"Star Hunter",    desc:"Master 50 words",                  t:()=>masteredCount()>=50},
+  {id:"mall",    ic:"🏆", name:"Word Champion",  desc:"Master every word",                t:()=>masteredCount()>=vocabData.length},
+  {id:"unit",    ic:"🎖️", name:"Unit Master",    desc:"Master every word in one unit",    t:()=>UNITS.some(u=>unitMastered(u.key)===vocabData.filter(v=>unitKey(v)===u.key).length)},
+  {id:"d3",      ic:"📅", name:"3 Days",         desc:"Play on 3 different days",         t:()=>S.days.length>=3},
+  {id:"d7",      ic:"🗓️", name:"Week Warrior",   desc:"Play on 7 different days",         t:()=>S.days.length>=7},
+  {id:"exam",    ic:"🎯", name:"Exam Ready",     desc:"Score 90%+ in an Exam Prep round", t:()=>S.examGood>=1},
+];
+function checkBadges(){ const got = []; BADGES.forEach(b => { if (!S.badges[b.id] && b.t()){ S.badges[b.id] = today(); got.push(b); } }); return got; }
+
+/* ===================== SOUND / SPEECH ===================== */
+let AC;
+function ac(){ if (!AC){ try { AC = new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} } if (AC && AC.state === "suspended") AC.resume(); return AC; }
+function tone(f, d, type="square", when=0, vol=.07){
+  if (!S.sound) return; const a = ac(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f;
+  const t = a.currentTime + when; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .03);
+}
+const SFX = {
+  ok(){ tone(660,.09); tone(990,.16,"square",.08); },
+  bad(){ tone(260,.16,"sawtooth",0,.05); tone(180,.24,"sawtooth",.13,.05); },
+  end(){ [523,659,784,1047].forEach((f,i)=>tone(f,.18,"square",i*.12)); },
+  level(){ [523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,.16,"triangle",i*.08,.1)); },
+  fix(){ [784,988,1175,1568].forEach((f,i)=>tone(f,.13,"triangle",i*.07,.1)); },
+  streak(){ [880,1175,1760].forEach((f,i)=>tone(f,.1,"square",i*.06)); }
+};
+function speak(t){
+  try {
+    if (!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(t); u.lang = "en-US"; u.rate = .85;
+    const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.indexOf("en") === 0);
+    const pref = vs.find(v => /Samantha|Google US|Alex|Karen/.test(v.name)) || vs.find(v => v.lang === "en-US") || vs[0];
+    if (pref) u.voice = pref;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch(e){}
+}
+
+/* ===================== FX ===================== */
+const fx = $("#fx"), fctx = fx.getContext("2d"); let parts = [], fxOn = false;
+function burst(n=140){
+  const r = window.devicePixelRatio || 1; fx.width = innerWidth*r; fx.height = innerHeight*r;
+  const cols = ["#ffd23f","#ff3fa4","#2ef2ff","#3cff8f","#9b5cff","#ff8a3d"];
+  for (let i = 0; i < n; i++){
+    const a = Math.random()*Math.PI*2, sp = (4+Math.random()*11)*r;
+    parts.push({x:fx.width/2, y:fx.height*.42, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-5*r, life:60+Math.random()*45, c:cols[i%cols.length], s:(4+Math.random()*6)*r, g:.28*r});
+  }
+  if (!fxOn){ fxOn = true; requestAnimationFrame(stepFx); }
+}
+function stepFx(){
+  fctx.clearRect(0,0,fx.width,fx.height);
+  parts = parts.filter(p => p.life > 0);
+  parts.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= .98; p.life--; fctx.globalAlpha = Math.min(1, p.life/30); fctx.fillStyle = p.c; fctx.fillRect(p.x, p.y, p.s, p.s); });
+  fctx.globalAlpha = 1;
+  if (parts.length) requestAnimationFrame(stepFx); else { fxOn = false; fctx.clearRect(0,0,fx.width,fx.height); }
+}
+function banner(main, sub){ const b = $("#banner"); b.innerHTML = `<div class="bn-main">${main}</div>${sub?`<div class="bn-sub">${sub}</div>`:""}`; b.classList.remove("show"); void b.offsetWidth; b.classList.add("show"); }
+function updateStreak(){ const c = S.current, el = $("#streak"); if (c && c.streak >= 3 && !$("#quiz").classList.contains("hidden")){ el.textContent = "🔥 " + c.streak; el.classList.remove("hidden"); } else el.classList.add("hidden"); }
+const STREAK_MSG = {5:"🔥 ON FIRE!", 10:"⚡ UNSTOPPABLE!", 15:"🌟 LEGENDARY!", 20:"👑 PERFECT!"};
+
+/* ===================== QUESTION BUILDING ===================== */
+function zhTokens(v){ return v.chinese.replace(/（.*?）/g,"").split(/[、，,]/).map(x => x.replace(/…+/g,"").trim()).filter(Boolean); }
+function clash(a, b){
+  if (confusables.some(g => g.includes(a.word) && g.includes(b.word))) return true;
+  const ta = zhTokens(a), tb = zhTokens(b);
+  return ta.some(x => tb.includes(x));
+}
+function posGroup(p){ p = p.replace("*",""); return p.indexOf("phr") === 0 ? "phr" : p; }
+function pickDistractors(v, valueOf, eligible){
+  const correct = valueOf(v).toLowerCase(), seen = new Set([correct]), out = [];
+  const pool = shuffle(vocabData.filter(x => x !== v && eligible(x) && !clash(v, x)));
+  const same = pool.filter(x => posGroup(x.pos) === posGroup(v.pos)), other = pool.filter(x => posGroup(x.pos) !== posGroup(v.pos));
+  for (const x of same.concat(other)){
+    if (out.length >= 3) break;
+    const val = valueOf(x); if (!val) continue;
+    const k = val.toLowerCase(); if (seen.has(k)) continue;
+    seen.add(k); out.push(val);
+  }
+  return out;
+}
+function fakeForms(word, inf){
+  const parts = word.split(" "), head = parts[0], tail = parts.slice(1).join(" ");
+  const w = x => tail ? x + " " + tail : x;
+  let c = inf.form === "past"
+    ? [head+"ed", head+"d", head+head.slice(-1)+"ed", head.replace(/y$/,"ied"), head.replace(/e$/,"")+"ed", head, head+"eded"]
+    : [head+"s", head+"es", head.replace(/y$/,"ies"), head+head.slice(-1)+"es", head, head+"ses", head+"ss"];
+  const bad = new Set([inf.inflected.toLowerCase(), ...fakeBlock]);
+  const out = [];
+  shuffle([...new Set(c.map(w))]).forEach(x => { if (out.length < 3 && !bad.has(x.toLowerCase()) && !out.includes(x)) out.push(x); });
+  if (out.indexOf(word) < 0 && out.length === 3 && !bad.has(word.toLowerCase())) out[2] = word;  // 原形一定是一個選項
+  return out;
+}
+function makeQuestion(word, type){
+  const v = byWord[word], q = {word, type};
+  if (type === "INFL" && !inflectionData[word]) type = q.type = "EN_CN";
+  if (type === "EN_CN"){
+    q.answer = v.chinese; q.options = shuffle([v.chinese, ...pickDistractors(v, x => x.chinese, () => true)]);
+  } else if (type === "CN_EN" || type === "DEF"){
+    q.answer = v.word; q.options = shuffle([v.word, ...pickDistractors(v, x => x.word, () => true)]);
+  } else if (type === "FILL"){
+    let valueOf = x => x.word, elig = () => true;
+    if (v.form === "past" || v.form === "plural"){
+      valueOf = x => (inflectionData[x.word] && inflectionData[x.word].form === v.form) ? inflectionData[x.word].inflected : null;
+      elig = x => !!valueOf(x);
+    }
+    q.answer = v.answer.toLowerCase();
+    q.options = shuffle([q.answer, ...pickDistractors(v, valueOf, elig).map(s => s.toLowerCase())]);
+  } else if (type === "INFL"){
+    const inf = inflectionData[word];
+    q.answer = inf.inflected; q.options = shuffle([inf.inflected, ...fakeForms(word, inf)]);
+  }
+  return q;
+}
+function weightedType(exclude){
+  const e = Object.entries(TYPE_WEIGHTS).filter(([t]) => t !== exclude);
+  let r = Math.random() * e.reduce((a,[,w]) => a + w, 0);
+  for (const [t,w] of e){ if ((r -= w) < 0) return t; }
+  return e[0][0];
+}
+function buildQuestions(words){
+  words = shuffle(words);
+  const types = words.map(() => weightedType());
+  const want = words.length >= 5 ? Math.max(1, Math.round(words.length * INFL_RATE)) : 0;
+  const cand = shuffle(words.map((w,i) => i).filter(i => inflectionData[words[i]]));
+  const chosen = [];
+  for (const i of cand){ if (chosen.length >= want) break; if (chosen.some(j => Math.abs(j - i) <= 1)) continue; chosen.push(i); }
+  chosen.forEach(i => types[i] = "INFL");
+  return words.map((w,i) => makeQuestion(w, types[i]));
+}
+function spreadSameWords(items){  // 同一個字不要連續出現
+  for (let pass = 0; pass < 3; pass++){
+    for (let i = 1; i < items.length; i++){
+      if (items[i].word === items[i-1].word){
+        const j = items.findIndex((x,k) => k > i && x.word !== items[i].word && (!items[k+1] || items[k+1].word !== items[i].word) && items[k-1].word !== items[i].word);
+        if (j > 0) [items[i], items[j]] = [items[j], items[i]];
+      }
+    }
+  }
+  return items;
+}
+
+/* ===================== MODES ===================== */
+function selectedWords(sel){ return vocabData.filter(v => sel.includes(unitKey(v))).map(v => v.word); }
+function balancedPlan(list){ const tr = Math.max(1, Math.ceil(list.length / ROUND_SIZE)); return {totalRounds:tr, size:Math.ceil(list.length / tr)}; }
+
+function newGame(){
+  const words = selectedWords(S.selected);
+  if (!words.length){ toast("Pick at least one unit first!"); return; }
+  if (S.current && !confirm("You have a round in progress. Start a new game anyway?")) return;
+  const q = shuffle(words), b = balancedPlan(q);
+  S.plan = {units:S.selected.slice(), queue:q, roundIndex:0, totalRounds:b.totalRounds, size:b.size};
+  S.current = null; save(); startPlanRound();
+}
+function planActive(){ return S.plan && S.plan.roundIndex < S.plan.totalRounds; }
+function startPlanRound(){
+  const p = S.plan, words = p.queue.slice(p.roundIndex*p.size, (p.roundIndex+1)*p.size).filter(w => byWord[w]);
+  beginRound("practice", buildQuestions(words), `Round ${p.roundIndex+1} / ${p.totalRounds}`);
+}
+function activeMistakes(){ return Object.entries(S.mistakes).filter(([w,m]) => m.active && byWord[w]); }
+function startGym(onlyWords){
+  let act = activeMistakes();
+  if (onlyWords) act = act.filter(([w]) => onlyWords.includes(w));
+  if (!act.length){ toast("No mistakes to fix — amazing! 🎉"); return; }
+  const picked = shuffle(act).sort((a,b) => b[1].count - a[1].count).slice(0, ROUND_SIZE);
+  const qs = shuffle(picked.map(([w,m]) => {
+    let t = weightedType(m.lastType);
+    if (inflectionData[w] && m.lastType !== "INFL" && Math.random() < .12) t = "INFL";
+    return makeQuestion(w, t);
+  }));
+  beginRound("gym", qs, "💪 Mistake Gym");
+}
+function examItems(sel){
+  const items = [];
+  Object.entries(S.mistakes).forEach(([w,m]) => {
+    const v = byWord[w]; if (!v || !sel.includes(unitKey(v))) return;
+    Object.keys(m.types).forEach(t => { if (t === "INFL" && !inflectionData[w]) return; items.push({word:w, type:t}); });
+  });
+  return items;
+}
+function startExam(){
+  const items = spreadSameWords(shuffle(examItems(S.examSel)));
+  if (!items.length){ toast("No mistakes recorded in these units yet!"); return; }
+  const b = balancedPlan(items);
+  S.exam = {queue:items, roundIndex:0, totalRounds:b.totalRounds, size:b.size, sel:S.examSel.slice()};
+  S.current = null; save(); startExamRound();
+}
+function examActive(){ return S.exam && S.exam.roundIndex < S.exam.totalRounds; }
+function startExamRound(){
+  const e = S.exam, part = e.queue.slice(e.roundIndex*e.size, (e.roundIndex+1)*e.size).filter(it => byWord[it.word]);
+  beginRound("exam", part.map(it => makeQuestion(it.word, it.type)), `🎯 Exam Prep ${e.roundIndex+1} / ${e.totalRounds}`);
+}
+function beginRound(mode, questions, label){
+  S.current = {mode, questions, idx:0, score:0, streak:0, results:[], label, xpGain:0, fixes:0, locked:false};
+  save(); ac(); renderQuiz();
+}
+
+/* ===================== SCREENS ===================== */
+function show(id){ ["ready","home","quiz","result","trophies","book","exam"].forEach(s => $("#"+s).classList.toggle("hidden", s !== id)); window.scrollTo(0,0); updateStreak(); }
+function goHome(){ if (S.current) S.current.locked = false; clearTimeout(window._auto); save(); renderHome(); }
+
+function renderHome(){
+  if (!ready) return renderReady();
+  const L = levelInfo(S.xp), acc = S.totalQ ? Math.round(S.totalOK/S.totalQ*100) : 0;
+  const nAct = activeMistakes().length, nEver = Object.keys(S.mistakes).filter(w => byWord[w]).length;
+  const selW = selectedWords(S.selected).length, b = balancedPlan(new Array(selW));
+  let main = "";
+  if (S.current){
+    const c = S.current;
+    main += `<button class="btn b-cont" onclick="renderQuiz()">▶ CONTINUE <small>${esc(c.label)} · Q${c.idx+1}/${c.questions.length}</small></button>`;
+  } else if (planActive()){
+    main += `<button class="btn b-cont" onclick="startPlanRound()">▶ NEXT ROUND <small>${S.plan.roundIndex+1} / ${S.plan.totalRounds}</small></button>`;
+  }
+  main += `<button class="btn b-start" onclick="newGame()">✨ NEW GAME <small>${selW} words · ${selW?b.totalRounds:0} rounds</small></button>`;
+  $("#home").innerHTML = `
+  <div class="logo"><div class="t1">WORD QUEST</div><div class="t2">${esc(S.name)}'s Vocab Adventure · Teacher F & Teacher C</div></div>
+  <div class="card">
+    <div class="player">
+      <div class="avatar">${L.av}</div>
+      <div class="pinfo">
+        <div class="plv">LEVEL ${L.lv}</div>
+        <div class="ptitle">${L.title}</div>
+        <div class="xpbar"><div style="width:${L.cur/L.need*100}%"></div></div>
+        <div class="xptxt">${L.cur} / ${L.need} XP to next level</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>⭐ ${masteredCount()}</b><span>of ${vocabData.length} mastered</span></div>
+      <div class="stat"><b>💪 ${S.bravery}</b><span>mistakes beaten</span></div>
+      <div class="stat"><b>🔥 ${S.bestStreak}</b><span>best streak</span></div>
+      <div class="stat"><b>${acc}%</b><span>${S.rounds} rounds</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>CHOOSE UNITS</h3>
+    ${TEACHERS.map(t => {
+      const us = UNITS.filter(u => u.teacher === t), allOn = us.every(u => S.selected.includes(u.key));
+      return `<div class="tsec"><div class="thead"><b>${TEACHER_NAME[t]}</b><button class="btn-link" onclick="toggleTeacher('${t}','selected')">${allOn?"Clear":"Select all"}</button></div>
+      <div class="chips">${us.map(u => {
+        const tot = vocabData.filter(v => unitKey(v) === u.key).length, m = unitMastered(u.key);
+        return `<button class="chip ${t==='F'?'f':''} ${S.selected.includes(u.key)?'on':''}" onclick="toggleUnit('${u.key}','selected')">${esc(u.unit)}<small>${m===tot?"🏆":"⭐"} ${m}/${tot}</small></button>`;
+      }).join("")}</div></div>`;
+    }).join("")}
+    <div class="selinfo">${selW} words selected</div>
+  </div>
+  ${main}
+  <div class="grid2">
+    <button class="btn b-gym" onclick="startGym()">💪 MISTAKE GYM ${nAct?`<span class="badge-n">${nAct}</span>`:""}</button>
+    <button class="btn b-exam" onclick="renderExam()">🎯 EXAM PREP ${nEver?`<span class="badge-n" style="color:var(--purple)">${nEver}</span>`:""}</button>
+  </div>
+  <div class="grid2" style="margin-top:10px">
+    <button class="btn b-ghost" onclick="renderTrophies()">🏆 Trophies <small>${Object.keys(S.badges).length}/${BADGES.length}</small></button>
+    <button class="btn b-ghost" onclick="renderBook()">📖 Word Book</button>
+  </div>
+  <div class="row-sm">
+    <button class="btn-sm" onclick="sendTelegram(buildReport(), false)">📨 Send Progress Report</button>
+    <button class="btn-sm" onclick="S.sound=!S.sound;save();renderHome()">${S.sound?"🔊 Sound On":"🔇 Sound Off"}</button>
+    <button class="btn-sm" onclick="restartAll()">♻️ Restart</button>
+  </div>`;
+  show("home");
+}
+function toggleUnit(k, field){ const a = S[field]; const i = a.indexOf(k); if (i >= 0) a.splice(i,1); else a.push(k); save(); field === "selected" ? renderHome() : renderExam(); }
+function toggleTeacher(t, field){
+  const keys = UNITS.filter(u => u.teacher === t).map(u => u.key), allOn = keys.every(k => S[field].includes(k));
+  S[field] = allOn ? S[field].filter(k => !keys.includes(k)) : [...new Set(S[field].concat(keys))];
+  save(); field === "selected" ? renderHome() : renderExam();
+}
+function restartAll(){
+  if (!confirm("Restart will erase ALL progress: levels, stars, trophies and mistake records. Are you sure?")) return;
+  if (!confirm("Really erase everything? This cannot be undone.")) return;
+  const snd = S.sound, nm = S.name, ob = S.outbox; S = defaultState(); S.sound = snd; S.name = nm; S.outbox = ob; save(); renderHome(); toast("Fresh start! 🌱");
+}
+
+/* ---------- ready check（每次打開遊戲先確認準備好了） ---------- */
+const READY_WAIT = 8;   // 開始鍵至少要等幾秒才能按，讓孩子先把話讀完
+const READY_ITEMS = [
+  ["📖", "I have carefully read all my hint words.", "我已經認真看完所有提示字了。"],
+  ["🐢", "I will read every question to the end before I answer.", "每一題我都會看完再作答，不搶快。"],
+  ["💪", "I am sure I am ready.", "我確定自己準備好了。"]
+];
+let ready = false, readyTicks = [], readySince = 0;
+function renderReady(){
+  if (!S.name) return renderName();
+  if (!readySince) readySince = Date.now();
+  $("#ready").innerHTML = `
+  <div class="logo"><div class="t1">READY?</div><div class="t2">${esc(S.name)}'s Word Quest</div></div>
+  <div class="card ready-msg">
+    <p><b>Hi ${esc(S.name)}! Are you really ready?</b><span>你真的準備好了嗎？</span></p>
+    <p><b>Careful, high-quality preparation is how you take responsibility for yourself.</b><span>認真、有質量的準備，是對自己負責任的方式。</span></p>
+    <p style="margin:0"><b>Only start when you are sure you are ready.</b><span>確定自己準備好了，再開始。</span></p>
+  </div>
+  <div class="card">
+    <h3>READY CHECK · 準備檢查</h3>
+    ${READY_ITEMS.map(([ic,en,zh],i) => `<button id="rk${i}" class="rk ${readyTicks[i]?"on":""}" onclick="tickReady(${i})"><div class="box"></div><div><b>${ic} ${en}</b><span>${zh}</span></div></button>`).join("")}
+    <button class="btn b-ghost" style="margin:4px 0 0" onclick="renderBook()">📖 Open Word Book <small>還沒看完？打開單字本複習</small></button>
+  </div>
+  <button id="readyGo" class="btn b-start" onclick="startReady()"></button>
+  <button class="btn b-ghost" onclick="renderName()">Not ${esc(S.name)}? <small>不是你？換名字</small></button>`;
+  show("ready");
+  updateReadyBtn();
+}
+// 第一次打開先輸入名字：畫面和 Telegram 報告都會用這個名字
+function renderName(){
+  $("#ready").innerHTML = `
+  <div class="logo"><div class="t1">WORD QUEST</div><div class="t2">Teacher F & Teacher C</div></div>
+  <div class="card ready-msg">
+    <p><b>Welcome! What's your name?</b><span>歡迎！請輸入你的名字</span></p>
+    <input id="nameIn" class="name-in" maxlength="20" autocomplete="off" value="${esc(S.name)}" placeholder="Your name / 你的名字"
+      oninput="$('#nameGo').disabled = !this.value.trim()" onkeydown="if(event.key==='Enter') saveName()">
+    <p style="margin:12px 0 0"><span style="font-size:14px;color:var(--muted)">Your name goes on your progress reports. 進度報告會寫上這個名字。</span></p>
+  </div>
+  <button id="nameGo" class="btn b-start" onclick="saveName()" ${S.name ? "" : "disabled"}>OK ▶</button>`;
+  show("ready");
+}
+function saveName(){
+  const n = ($("#nameIn").value || "").replace(/\s+/g, " ").trim().slice(0, 20); if (!n) return;
+  S.name = n; save(); renderReady();
+}
+function updateReadyBtn(){
+  const b = $("#readyGo"); if (!b) return;
+  const left = Math.max(0, READY_WAIT - Math.floor((Date.now() - readySince) / 1000));
+  const n = READY_ITEMS.filter((_,i) => readyTicks[i]).length, total = READY_ITEMS.length;
+  b.disabled = left > 0 || n < total;
+  b.innerHTML = left > 0 ? `⏳ Read carefully… ${left} <small>先把上面的話讀完</small>`
+    : n < total ? `Tick all ${total} boxes <small>${n} / ${total} · 每一項都要確認</small>`
+    : `🚀 I'M READY! LET'S GO`;
+  clearTimeout(updateReadyBtn._t); if (left > 0) updateReadyBtn._t = setTimeout(updateReadyBtn, 1000);
+}
+function tickReady(i){ readyTicks[i] = !readyTicks[i]; $("#rk"+i).classList.toggle("on", readyTicks[i]); updateReadyBtn(); }
+function startReady(){
+  if (!READY_ITEMS.every((_,i) => readyTicks[i]) || Date.now() - readySince < READY_WAIT*1000) return;
+  ready = true; ac(); SFX.ok(); renderHome();
+}
+
+/* ---------- quiz ---------- */
+function questionBody(q){
+  const v = byWord[q.word];
+  const spk = `<button class="spk" data-w="${esc(v.word)}" onclick="speak(this.dataset.w)">🔊</button>`;
+  if (q.type === "EN_CN") return `<div class="ask">What does this word mean?</div><div class="big">${esc(v.word)}${spk}</div><div class="pos">${esc(v.pos.replace("*",""))}</div>`;
+  if (q.type === "CN_EN") return `<div class="ask">Which English word matches?</div><div class="big zh">${esc(v.chinese)}</div><div class="pos">${esc(v.pos.replace("*",""))}</div>`;
+  if (q.type === "DEF") return `<div class="ask">Which word matches this definition?</div><div class="def">“${esc(v.def)}”</div>
+    ${q.usedHint ? `<div class="hintbox">${esc(v.defZH)}</div>` : `<button class="hint-btn" onclick="useHint()">💡 Chinese hint (half XP)</button>`}`;
+  if (q.type === "FILL") return `<div class="ask">Fill in the blank.</div><div class="sent">${esc(v.sentence).replace(/______/g,'<span class="blank">?</span>')}</div><div class="zhhint">${esc(sentenceZH[v.word]||"")}</div>`;
+  if (q.type === "INFL"){ const inf = inflectionData[q.word];
+    return `<div class="ask">What is the <b style="color:var(--orange)">${inf.form==="past"?"PAST TENSE":"PLURAL"}</b> of…</div><div class="big">${esc(v.word)}${spk}</div><div class="pos">${esc(v.chinese)} · ${esc(inf.hint)}</div>`; }
+}
+function renderQuiz(){
+  const c = S.current; if (!c) return renderHome();
+  if (c.results.length > c.idx) return nextQ();  // 這題已作答過（按🏠或重新整理後回來）→ 直接下一題，不能重答
+  const q = c.questions[c.idx], n = c.questions.length;
+  c.locked = false;
+  $("#quiz").innerHTML = `
+    <div class="qtop"><button class="btn-sm" onclick="goHome()">🏠</button><div class="qlabel">${esc(c.label)}</div><div class="qscore">✔ ${c.score}</div></div>
+    <div class="pbar"><div style="width:${c.idx/n*100}%"></div></div>
+    <div class="qcount"><span>Question ${c.idx+1} / ${n}</span><span class="tag t-${q.type}">${TYPE_LABEL[q.type]}</span></div>
+    <div class="card qcard">${questionBody(q)}</div>
+    <div class="opts">${q.options.map((o,i) => `<button class="opt" onclick="answer(${i})">${esc(o)}</button>`).join("")}</div>
+    <div id="fb"></div>`;
+  show("quiz");
+}
+function useHint(){ const q = S.current.questions[S.current.idx]; q.usedHint = true; save(); $(".qcard").innerHTML = questionBody(q); }
+
+const ENCOURAGE = [
+  "Mistakes make your brain grow! 🌱", "Nice try! This word is now in your Mistake Gym 💪",
+  "Every hero misses sometimes. You'll get it next time! 🦸", "Good effort! Read it once more and you'll remember 📖",
+  "That's how learning works — keep going! 🚀", "Brave try! Beat it later for bonus XP ✨"
+];
+function addXP(n){ const before = levelInfo(S.xp).lv; S.xp += n; const after = levelInfo(S.xp); if (after.lv > before){ setTimeout(() => { banner("LEVEL UP!", `Level ${after.lv} · ${after.title} ${after.av}`); burst(180); SFX.level(); }, 500); } }
+function answer(i){
+  const c = S.current; if (!c || c.locked || c.results.length > c.idx) return; c.locked = true;
+  const q = c.questions[c.idx], v = byWord[q.word];
+  const ok = q.options[i].toLowerCase() === q.answer.toLowerCase();
+  const W = S.words[q.word] || {s:0, c:0, w:0};
+  let gain = 0, fixedNow = false;
+  S.totalQ++;
+  if (ok){
+    W.c++; W.s = Math.min(3, W.s + 1); c.score++; c.streak++; S.totalOK++;
+    gain = q.usedHint ? 5 : 10; if (c.streak >= 5) gain += 5;
+    const m = S.mistakes[q.word];
+    if (m && m.active){
+      m.fixProgress = (m.fixProgress || 0) + 1;
+      if (m.fixProgress >= FIX_NEEDED){ m.active = false; m.fixedOn = today(); S.bravery++; c.fixes++; gain += 15; fixedNow = true; }
+    }
+    S.bestStreak = Math.max(S.bestStreak, c.streak);
+  } else {
+    W.w++; W.s = Math.max(0, W.s - 1); c.streak = 0; gain = 2;
+    const m = S.mistakes[q.word] || {count:0, types:{}, first:today(), active:true, fixProgress:0};
+    m.count++; m.types[q.type] = (m.types[q.type] || 0) + 1; m.last = today(); m.lastType = q.type; m.active = true; m.fixProgress = 0;
+    S.mistakes[q.word] = m;
+  }
+  S.words[q.word] = W; c.xpGain += gain; addXP(gain);
+  c.results.push({word:q.word, type:q.type, ok});
+  save();
+
+  // UI
+  document.querySelectorAll(".opt").forEach((b,j) => {
+    const isAns = q.options[j].toLowerCase() === q.answer.toLowerCase();
+    if (isAns) b.classList.add("right"); else if (j === i) b.classList.add("wrong"); else b.classList.add("dim");
+  });
+  let detail = "";
+  if (q.type === "FILL"){
+    const full = esc(v.sentence).replace(/______/g, `<b>${esc(v.answer)}</b>`);
+    detail = `<div class="fb-s">${full}</div><div class="fb-zh">${esc(sentenceZH[v.word]||"")}</div>`;
+  } else if (q.type === "DEF"){
+    detail = `<div class="fb-s">${esc(v.def)}</div><div class="fb-zh">${esc(v.defZH)}</div>`;
+  } else if (q.type === "INFL"){
+    const inf = inflectionData[q.word];
+    detail = `<div class="fb-s">${esc(v.word)} → <b>${esc(inf.inflected)}</b> (${inf.form==="past"?"past tense":"plural"})</div>`;
+  }
+  const title = ok ? `✅ Correct! +${gain} XP` : `💡 ${ENCOURAGE[Math.floor(Math.random()*ENCOURAGE.length)]}`;
+  $("#fb").innerHTML = `<div class="fb ${ok?"ok":"bad"}">
+    <div class="fb-t">${title}</div>
+    <div class="fb-w">${esc(v.word)}<i>${esc(v.pos.replace("*",""))}</i>${esc(v.chinese)}
+      <button class="spk" data-w="${esc(v.word)}" onclick="speak(this.dataset.w)">🔊</button></div>
+    ${detail}
+    ${fixedNow ? `<div class="fb-fix">💪 MISTAKE BEATEN! +15 bonus XP</div>` : ""}
+    <button id="fbNext" class="btn ${ok?"b-cont":"b-start"}" onclick="nextQ()" ${ok?"disabled":""}>${c.idx+1 >= c.questions.length ? "SEE RESULTS 🏁" : "NEXT ▶"}</button>
+  </div>`;
+  if (!ok) setTimeout(() => $("#fb").scrollIntoView({behavior:"smooth", block:"nearest"}), 50);
+
+  if (ok){
+    SFX.ok();
+    if (fixedNow){ setTimeout(SFX.fix, 200); banner("💪 BRAVE!", "Mistake beaten!"); burst(90); }
+    if (c.streak % 5 === 0){ setTimeout(SFX.streak, 150); banner(STREAK_MSG[c.streak] || "🌟 LEGENDARY!", c.streak + " in a row!"); burst(160); }
+    setTimeout(() => { const b = $("#fbNext"); if (b) b.disabled = false; }, OK_WAIT);
+    clearTimeout(window._auto); window._auto = setTimeout(() => { if (S.current === c && c.locked) nextQ(); }, fixedNow || c.streak % 5 === 0 ? OK_WAIT + 800 : OK_WAIT);
+  } else SFX.bad();
+  $(".qscore").textContent = "✔ " + c.score;
+  updateStreak();
+}
+function nextQ(){
+  clearTimeout(window._auto);
+  const c = S.current; if (!c) return;
+  c.idx++; c.locked = false; save();
+  if (c.idx >= c.questions.length) finishRound(); else renderQuiz();
+}
+function finishRound(){
+  const c = S.current, total = c.questions.length, pct = Math.round(c.score/total*100);
+  let bonus = 20; if (c.score === total && total >= 5){ bonus += 30; S.perfects++; }
+  c.xpGain += bonus; addXP(bonus);
+  S.rounds++; if (c.mode === "exam" && pct >= 90) S.examGood++;
+  const d = today(); if (!S.days.includes(d)) S.days.push(d);
+  S.history.push({d:nowStr(), mode:c.mode, label:c.label, score:c.score, total});
+  if (S.history.length > 100) S.history.shift();
+  if (c.mode === "practice" && S.plan) S.plan.roundIndex++;
+  if (c.mode === "exam" && S.exam) S.exam.roundIndex++;
+  const res = Object.assign({}, c, {pct, bonus, newBadges:checkBadges()});
+  S.current = null; save();
+  renderResult(res);
+  sendTelegram(buildReport(res), true);
+}
+
+/* ---------- result ---------- */
+function renderResult(r){
+  const stars = r.pct >= 95 ? 3 : r.pct >= 80 ? 2 : r.pct >= 60 ? 1 : 0;
+  const msg = r.pct === 100 ? "PERFECT! You're a word legend! 👑" : r.pct >= 80 ? "Awesome job! Keep it up! 🌟" : r.pct >= 60 ? "Good work! You're getting stronger! 💪" : "Every mistake you beat makes you stronger. Let's hit the Mistake Gym! 🦸";
+  const missed = r.results.filter(x => !x.ok);
+  const L = levelInfo(S.xp);
+  let next = "";
+  if (r.mode === "practice" && planActive()) next = `<button class="btn b-cont" onclick="startPlanRound()">▶ NEXT ROUND <small>${S.plan.roundIndex+1} / ${S.plan.totalRounds}</small></button>`;
+  else if (r.mode === "practice") next = `<div class="card" style="text-align:center;font-weight:900">🎉 You finished every round in this game!</div>`;
+  if (r.mode === "exam" && examActive()) next = `<button class="btn b-exam" onclick="startExamRound()">🎯 NEXT EXAM ROUND <small>${S.exam.roundIndex+1} / ${S.exam.totalRounds}</small></button>`;
+  const missWords = [...new Set(missed.map(x => x.word))];
+  $("#result").innerHTML = `
+    <div class="logo"><div class="t1" style="font-size:20px">ROUND CLEAR!</div><div class="t2">${esc(r.label)}</div></div>
+    <div class="card">
+      <div class="res-stars">${"⭐".repeat(stars)}${"☆".repeat(3-stars)}</div>
+      <div class="res-score">${r.score} / ${r.questions.length}</div>
+      <div class="res-msg">${msg}</div>
+      <div class="res-row"><span>XP earned</span><span style="color:var(--green)">+${r.xpGain}</span></div>
+      <div class="res-row"><span>Mistakes beaten 💪</span><span>${r.fixes}</span></div>
+      <div class="res-row"><span>Level</span><span>${L.av} ${L.lv} · ${L.title}</span></div>
+      <div class="xpbar" style="margin-top:8px"><div style="width:${L.cur/L.need*100}%"></div></div>
+    </div>
+    ${r.newBadges.length ? `<div class="card"><h3>NEW TROPHIES!</h3><div class="trophies">${r.newBadges.map(b => `<div class="tro got"><div class="ic">${b.ic}</div><b>${b.name}</b><span>${b.desc}</span></div>`).join("")}</div></div>` : ""}
+    ${missed.length ? `<div class="card"><h3>WORDS TO BEAT (${missWords.length})</h3>
+      ${missed.map(x => `<div class="miss-item"><div>${esc(x.word)} <span class="tag t-${x.type}" style="margin-left:6px">${TYPE_SHORT[x.type]}</span></div><span>${esc(byWord[x.word].chinese)}</span></div>`).join("")}
+      <button class="btn b-gym" style="margin-top:12px" onclick='startGym(${JSON.stringify(missWords)})'>💪 Beat these words now</button></div>` : ""}
+    ${next}
+    <button class="btn b-ghost" onclick="renderHome()">🏠 Home</button>`;
+  show("result");
+  SFX.end(); if (stars === 3){ burst(220); }
+  r.newBadges.forEach((b,i) => setTimeout(() => { banner(b.ic + " TROPHY!", b.name); SFX.level(); }, 900 + i*1900));
+}
+
+/* ---------- trophies ---------- */
+function renderTrophies(){
+  $("#trophies").innerHTML = `<button class="btn-sm back" onclick="renderHome()">◀ Back</button>
+    <div class="logo"><div class="t1" style="font-size:20px">TROPHIES</div><div class="t2">${Object.keys(S.badges).length} / ${BADGES.length} collected</div></div>
+    <div class="trophies">${BADGES.map(b => `<div class="tro ${S.badges[b.id]?"got":"locked"}"><div class="ic">${b.ic}</div><b>${b.name}</b><span>${b.desc}</span>${S.badges[b.id]?`<span style="display:block;color:var(--yellow);margin-top:4px">${S.badges[b.id]}</span>`:""}</div>`).join("")}</div>`;
+  show("trophies");
+}
+
+/* ---------- word book ---------- */
+// 單字本最上面的「特別注意的變化形」：[原形, 變化形, 中文, 單元, 常見錯誤]
+const TRICKY_FORMS = [
+  ["IRREGULAR PAST · 不規則過去式", [
+    ["set off", "set off", "出發", "Week 7-8", "不是 setted off"]]],
+  ["IRREGULAR PLURAL · 不規則複數", [
+    ["fungus", "fungi", "真菌", "Set 3", "不是 funguses"],
+    ["analysis", "analyses", "分析", "Set 6", "-is 變 -es"],
+    ["salesman", "salesmen", "推銷員", "Week 3-4", "man 變 men"],
+    ["species", "species", "物種", "Set 1", "單複數一樣"]]],
+  ["TRICKY SPELLING · 規則變化但容易拼錯", [
+    ["grip", "gripped", "抓緊（過去式）", "Set 5", "p 要重複，不是 griped"],
+    ["documentary", "documentaries", "紀錄片（複數）", "Week 1", "y 變 i 加 -es"],
+    ["comedy", "comedies", "喜劇（複數）", "Week 1", "y 變 i 加 -es"],
+    ["bias", "biases", "偏見（複數）", "Week 2", "字尾 s 加 -es"]]]
+];
+function renderBook(){
+  $("#book").innerHTML = `<button class="btn-sm back" onclick="renderHome()">◀ Back</button>
+    <div class="logo"><div class="t1" style="font-size:20px">WORD BOOK</div><div class="t2">Answer a word right 3 times to earn ★★★ · tap a word to hear it</div></div>
+    <div class="card"><h3>⚠️ WATCH OUT! TRICKY FORMS · 特別注意的變化形</h3>
+      ${TRICKY_FORMS.map(([title, rows]) => `<div class="tf-h">${title}</div>
+        ${rows.map(([w,f,zh,unit,note]) => `<div class="tf" data-w="${esc(f)}" onclick="speak(this.dataset.w)">
+          <div><b>${esc(w)} → <span class="tf-f">${esc(f)}</span></b><small>${esc(zh)} · ${esc(unit)}</small></div><span>${esc(note)}</span></div>`).join("")}`).join("")}
+    </div>
+    ${UNITS.map(u => {
+      const ws = vocabData.filter(v => unitKey(v) === u.key);
+      return `<div class="card"><h3>${TEACHER_NAME[u.teacher].toUpperCase()} · ${esc(u.unit.toUpperCase())} — ${unitMastered(u.key)}/${ws.length}</h3><div class="words">
+        ${ws.map(v => { const s = (S.words[v.word]||{}).s || 0;
+          return `<button class="wc ${s>=3?"m3":""}" data-w="${esc(v.word)}" onclick="speak(this.dataset.w)"><b>${esc(v.word)}</b><span>${esc(v.chinese)}</span><div class="st">${"★".repeat(s)}${"☆".repeat(3-s)}</div></button>`; }).join("")}
+      </div></div>`;
+    }).join("")}`;
+  show("book");
+}
+
+/* ---------- exam prep ---------- */
+function renderExam(){
+  const sel = S.examSel, items = examItems(sel);
+  const list = Object.entries(S.mistakes).filter(([w]) => byWord[w] && sel.includes(unitKey(byWord[w]))).sort((a,b) => b[1].count - a[1].count);
+  const cont = examActive() ? `<button class="btn b-cont" onclick="startExamRound()">▶ CONTINUE EXAM PREP <small>${S.exam.roundIndex+1} / ${S.exam.totalRounds}</small></button>` : "";
+  $("#exam").innerHTML = `<button class="btn-sm back" onclick="renderHome()">◀ Back</button>
+    <div class="logo"><div class="t1" style="font-size:20px">EXAM PREP</div><div class="t2">Every word you ever missed — in the same question type you missed it</div></div>
+    <div class="card"><h3>UNITS FOR THIS TEST</h3>
+      ${TEACHERS.map(t => { const us = UNITS.filter(u => u.teacher === t), allOn = us.every(u => sel.includes(u.key));
+        return `<div class="tsec"><div class="thead"><b>${TEACHER_NAME[t]}</b><button class="btn-link" onclick="toggleTeacher('${t}','examSel')">${allOn?"Clear":"Select all"}</button></div>
+        <div class="chips">${us.map(u => `<button class="chip ${t==='F'?'f':''} ${sel.includes(u.key)?'on':''}" onclick="toggleUnit('${u.key}','examSel')">${esc(u.unit)}</button>`).join("")}</div></div>`; }).join("")}
+      <div class="selinfo">${list.length} words · ${items.length} questions</div>
+    </div>
+    ${cont}
+    <button class="btn b-exam" onclick="startExam()">🎯 START EXAM PREP <small>${items.length} questions</small></button>
+    <div class="card"><h3>MISTAKE RECORD</h3>
+      ${list.length ? list.map(([w,m]) => `<div class="ex-item">
+        <div class="ex-top"><b>${esc(w)}</b><span class="cnt">✗ ${m.count}</span></div>
+        <div class="ex-sub">${esc(byWord[w].chinese)} · ${TEACHER_NAME[byWord[w].teacher]} ${esc(byWord[w].unit)} · last missed ${esc(m.last||"")}</div>
+        <div class="ex-tags">${Object.entries(m.types).map(([t,n]) => `<span class="tag t-${t}">${TYPE_SHORT[t]}${n>1?" ×"+n:""}</span>`).join("")}
+          <span class="status ${m.active?"act":"fixed"}">${m.active?"💪 Practicing":"✅ Beaten"}</span></div>
+      </div>`).join("") : `<div class="empty">No mistakes yet in these units. 🎉</div>`}
+    </div>`;
+  show("exam");
+}
+
+/* ===================== TELEGRAM ===================== */
+function buildReport(r){
+  const L = levelInfo(S.xp), acc = S.totalQ ? Math.round(S.totalOK/S.totalQ*100) : 0;
+  const lines = ["📚 " + (S.name || "Player") + " · Word Quest Report", "🗓 " + nowStr()];
+  if (r){
+    lines.push("", `🎮 ${r.label.replace(/[💪🎯]\s?/g,"")}: ${r.score}/${r.questions.length} (${r.pct}%)`, `✨ +${r.xpGain} XP · 💪 beaten ${r.fixes}`);
+    const miss = r.results.filter(x => !x.ok);
+    if (miss.length) lines.push("❌ Missed: " + miss.map(x => `${x.word}(${byWord[x.word].chinese})[${TYPE_SHORT[x.type]}]`).join(", "));
+    if (r.newBadges && r.newBadges.length) lines.push("🏆 New: " + r.newBadges.map(b => b.name).join(", "));
+  }
+  lines.push("", `🏅 Level ${L.lv} ${L.title} (XP ${S.xp})`, `📊 Rounds ${S.rounds} · Accuracy ${acc}% · Best streak ${S.bestStreak}`,
+    `⭐ Mastered ${masteredCount()}/${vocabData.length} · 💪 Mistakes beaten ${S.bravery}`);
+  const recent = S.history.slice(-5);
+  if (recent.length){ lines.push("", "📝 Recent rounds:"); recent.forEach(h => lines.push(`• ${h.d} ${h.label.replace(/[💪🎯]\s?/g,"")} ${h.score}/${h.total}`)); }
+  const act = activeMistakes().sort((a,b) => b[1].count - a[1].count);
+  lines.push("", `💪 Still practicing (${act.length}):`);
+  lines.push(act.length ? act.map(([w,m]) => `${w}(${byWord[w].chinese})×${m.count}`).join(", ") : "None 🎉");
+  lines.push(`🎯 Words ever missed: ${Object.keys(S.mistakes).length}`);
+  let txt = lines.join("\n"); if (txt.length > 3900) txt = txt.slice(0, 3900) + "…";
+  return txt;
+}
+// 報告先放進 outbox（存在手機裡），送成功才移除；沒送出的下次打開或下一回合會再補送
+function sendTelegram(text, silent){
+  S.outbox = (S.outbox || []).concat([text]).slice(-20); save();
+  flushOutbox(silent);
+}
+function flushOutbox(silent){
+  if (flushOutbox.busy || !(S.outbox || []).length) return;
+  flushOutbox.busy = true;
+  relayOnce(S.outbox[0], j => {
+    flushOutbox.busy = false;
+    if (j && j.ok){
+      S.outbox.shift(); save();
+      if (S.outbox.length) return flushOutbox(silent);
+      toast("📨 Report sent!");
+    } else {
+      toast("⚠️ Report not sent yet (" + S.outbox.length + "). Will try again. 報告還沒送出，稍後會再試");
+      console.warn("report send failed:", j && j.description);
+    }
+  });
+}
+// 先用 Apps Script 內建通道；失敗或不在 Apps Script 裡時改用網址 POST
+function relayOnce(text, cb){
+  const viaFetch = () => {
+    if (!RELAY_URL) return cb({ok:false, description:"no relay url"});
+    fetch(RELAY_URL, {method:"POST", body:new URLSearchParams({text})})
+      .then(r => r.json().catch(() => ({})).then(j => cb({ok:!!(r.ok && j.ok), description:j.description || r.status})))
+      .catch(e => cb({ok:false, description:"network: " + (e && e.message || e)}));
+  };
+  if (window.google && google.script && google.script.run){
+    google.script.run.withSuccessHandler(j => j && j.ok ? cb(j) : viaFetch()).withFailureHandler(viaFetch).relay(text);
+  } else viaFetch();
+}
+
+/* ===================== START ===================== */
+load();
+setTimeout(() => flushOutbox(true), 3000);
+if (window.speechSynthesis) speechSynthesis.getVoices();
+document.addEventListener("touchstart", ac, {once:true});
+renderHome();
+</script>
+</body>
+</html>
